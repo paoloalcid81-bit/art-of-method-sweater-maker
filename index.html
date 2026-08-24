@@ -143,11 +143,6 @@
     gap: 8px;
     font-size: 13px;
   }
-  .tiny {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.4;
-  }
   @media(max-width: 880px) {
     .app { grid-template-columns: 1fr; }
     .controls { position: static; }
@@ -166,7 +161,7 @@
     <div class="canvasWrap">
       <canvas id="canvas" width="1080" height="1080"></canvas>
     </div>
-    <div class="hint">Drag text to reposition within the safe chest printable area.</div>
+    <div class="hint">Drag text to reposition within the sweater chest area.</div>
   </section>
 
   <aside class="controls">
@@ -214,7 +209,6 @@
       <button id="centerBtn" class="btn">Center Design</button>
       <button id="resetBtn" class="btn">Reset</button>
       <button id="exportBtn" class="btn primary">Export PNG</button>
-      <div class="tiny">Movement and width are locked to stay strictly on the sweater chest.</div>
     </div>
   </aside>
 </div>
