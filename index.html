@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Art of Method Sweater Maker</title>
+<style>
+  :root{
+    --bg:#f5f5f3;
+    --panel:#ffffff;
+    --ink:#171717;
+    --muted:#6d6d6d;
+    --line:#dedede;
+    --accent:#171717;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,Arial,Helvetica,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .app{
+    max-width:1180px;
+    margin:auto;
+    padding:18px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 340px;
+    gap:18px;
+  }
+  .stage,.controls{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:18px;
+  }
+  .stage{
+    min-height:720px;
+    padding:18px;
+    display:flex;
+    flex-direction:column;
+  }
+  .brand{
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    margin-bottom:12px;
+  }
+  .brand h1{
+    font-size:18px;
+    margin:0;
+    letter-spacing:.08em;
+  }
+  .brand small{color:var(--muted)}
+  .canvasWrap{
+    flex:1;
+    display:grid;
+    place-items:center;
+    background:
+      linear-gradient(45deg,#f6f6f6 25%,transparent 25%),
+      linear-gradient(-45deg,#f6f6f6 25%,transparent 25%),
+      linear-gradient(45deg,transparent 75%,#f6f6f6 75%),
+      linear-gradient(-45deg,transparent 75%,#f6f6f6 75%);
+    background-size:24px 24px;
+    background-position:0 0,0 12px,12px -12px,-12px 0px;
+    border-radius:14px;
+    overflow:hidden;
+  }
+  canvas{
+    width:min(100%,700px);
+    aspect-ratio:1/1;
+    touch-action:none;
+    display:block;
+  }
+  .hint{
+    margin-top:10px;
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+  }
+  .controls{
+    padding:16px;
+    height:max-content;
+    position:sticky;
+    top:12px;
+  }
+  .section{
+    padding:14px 0;
+    border-top:1px solid var(--line);
+  }
+  .section:first-child{border-top:0;padding-top:0}
+  .section h2{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.13em;
+    margin:0 0 10px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    color:var(--muted);
+    margin:10px 0 6px;
+  }
+  input,select,button{
+    font:inherit;
+  }
+  input[type=text], select{
+    width:100%;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 11px;
+    background:#fff;
+  }
+  input[type=range]{width:100%}
+  .row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .swatches{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .swatch{
+    width:32px;height:32px;border-radius:50%;
+    border:2px solid #fff;
+    outline:1px solid #cfcfcf;
+    cursor:pointer;
+  }
+  .swatch.active{outline:3px solid #111}
+  .btn{
+    width:100%;
+    border:0;
+    border-radius:11px;
+    padding:11px 12px;
+    cursor:pointer;
+    background:#ececec;
+    color:#111;
+    font-weight:700;
+  }
+  .btn.primary{
+    background:#111;color:#fff;
+  }
+  .actions{display:grid;gap:8px}
+  .checkline{
+    display:flex;align-items:center;gap:8px;
+    font-size:13px;
+  }
+  .tiny{font-size:11px;color:var(--muted);line-height:1.4}
+  @media(max-width:880px){
+    .app{grid-template-columns:1fr}
+    .controls{position:static}
+    .stage{min-height:0}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage">
+    <div class="brand">
+      <div>
+        <h1>ART OF METHOD — SWEATER MAKER</h1>
+        <small>Design a Filipino-inspired city sweater.</small>
+      </div>
+      <small id="status">Drag the text on the sweater.</small>
+    </div>
+
+    <div class="canvasWrap">
+      <canvas id="canvas" width="1080" height="1080"></canvas>
+    </div>
+    <div class="hint">Drag the primary or secondary text directly on the sweater. Export includes an Art of Method watermark.</div>
+  </section>
+
+  <aside class="controls">
+    <div class="section">
+      <h2>Garment</h2>
+      <div class="row">
+        <button class="btn garmentBtn primary" data-garment="crewneck">Crewneck</button>
+        <button class="btn garmentBtn" data-garment="hoodie">Hoodie</button>
+      </div>
+      <label>Garment color</label>
+      <div class="swatches" id="garmentSwatches"></div>
+    </div>
+
+    <div class="section">
+      <h2>Main Text</h2>
+      <label>City / word</label>
+      <input id="mainText" type="text" value="EDMONTON" maxlength="24" />
+
+      <label>Style</label>
+      <select id="fontStyle">
+        <option value="jeepney">Jeepney / display</option>
+        <option value="bold">Bold sans</option>
+        <option value="classic">Classic serif</option>
+      </select>
+
+      <label>Size</label>
+      <input id="mainSize" type="range" min="42" max="150" value="95" />
+
+      <label>Text color</label>
+      <div class="swatches" id="mainSwatches"></div>
+
+      <label class="checkline"><input id="outlineToggle" type="checkbox" checked /> Outline</label>
+    </div>
+
+    <div class="section">
+      <h2>Secondary Text</h2>
+      <label>Subtitle</label>
+      <input id="subText" type="text" value="CANADA" maxlength="28" />
+
+      <label>Size</label>
+      <input id="subSize" type="range" min="20" max="70" value="36" />
+
+      <label>Text color</label>
+      <div class="swatches" id="subSwatches"></div>
+    </div>
+
+    <div class="section">
+      <h2>Filipino Accent</h2>
+      <label class="checkline"><input id="sunToggle" type="checkbox" checked /> Philippine-inspired sun + stars</label>
+      <label>Accent size</label>
+      <input id="accentSize" type="range" min="30" max="95" value="58" />
+    </div>
+
+    <div class="section actions">
+      <button id="centerBtn" class="btn">Center Design</button>
+      <button id="resetBtn" class="btn">Reset</button>
+      <button id="exportBtn" class="btn primary">Export PNG</button>
+      <div class="tiny">Prototype note: the “Jeepney / display” option currently uses a browser fallback. Replace it with your licensed Jeepney font using <code>@font-face</code> when you add the actual font file to your site.</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const garmentColors = [
+  ['Navy','#172033'],
+  ['Black','#171717'],
+  ['Cream','#ece5d7'],
+  ['Heather','#9ca0a3'],
+  ['Forest','#243b2d'],
+  ['Maroon','#5a2530']
+];
+const inkColors = [
+  ['Cream','#f5ead6'],
+  ['White','#ffffff'],
+  ['Gold','#d4a94f'],
+  ['Red','#b53a32'],
+  ['Blue','#2f5da8'],
+  ['Black','#111111']
+];
+
+let state = {
+  garment:'crewneck',
+  garmentColor:'#172033',
+  mainText:'EDMONTON',
+  subText:'CANADA',
+  fontStyle:'jeepney',
+  mainSize:95,
+  subSize:36,
+  mainColor:'#f5ead6',
+  subColor:'#f5ead6',
+  outline:true,
+  accent:true,
+  accentSize:58,
+  mainPos:{x:540,y:466},
+  subPos:{x:540,y:535},
+  selected:null
+};
+
+function swatches(elId, colors, key){
+  const el=document.getElementById(elId);
+  colors.forEach(([name,value],i)=>{
+    const b=document.createElement('button');
+    b.className='swatch'+(state[key]===value?' active':'');
+    b.style.background=value;
+    b.title=name;
+    b.dataset.value=value;
+    b.addEventListener('click',()=>{
+      state[key]=value;
+      [...el.children].forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      draw();
+    });
+    el.appendChild(b);
+  });
+}
+swatches('garmentSwatches',garmentColors,'garmentColor');
+swatches('mainSwatches',inkColors,'mainColor');
+swatches('subSwatches',inkColors,'subColor');
+
+function roundedRect(x,y,w,h,r,fill,stroke){
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}
+}
+
+function drawGarment(){
+  const c=state.garmentColor;
+  ctx.save();
+  ctx.translate(0,20);
+
+  // shadow
+  ctx.globalAlpha=.14;
+  ctx.fillStyle='#000';
+  ctx.beginPath();
+  ctx.ellipse(540,850,340,56,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.globalAlpha=1;
+
+  // sleeves
+  ctx.fillStyle=c;
+  ctx.beginPath();
+  ctx.moveTo(350,290);
+  ctx.lineTo(220,380);
+  ctx.lineTo(155,700);
+  ctx.lineTo(258,730);
+  ctx.lineTo(350,510);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(730,290);
+  ctx.lineTo(860,380);
+  ctx.lineTo(925,700);
+  ctx.lineTo(822,730);
+  ctx.lineTo(730,510);
+  ctx.closePath();
+  ctx.fill();
+
+  // cuffs
+  ctx.fillStyle=shade(c,-18);
+  roundedRect(148,682,118,58,18,ctx.fillStyle);
+  roundedRect(814,682,118,58,18,ctx.fillStyle);
+
+  // torso
+  ctx.fillStyle=c;
+  ctx.beginPath();
+  ctx.moveTo(350,275);
+  ctx.quadraticCurveTo(540,225,730,275);
+  ctx.lineTo(760,790);
+  ctx.quadraticCurveTo(540,825,320,790);
+  ctx.closePath();
+  ctx.fill();
+
+  // ribbed hem
+  ctx.fillStyle=shade(c,-14);
+  roundedRect(310,770,460,62,18,ctx.fillStyle);
+
+  // collar / hood
+  if(state.garment==='crewneck'){
+    ctx.fillStyle=shade(c,-20);
+    ctx.beginPath();
+    ctx.ellipse(540,286,86,42,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle='#f5f5f3';
+    ctx.beginPath();
+    ctx.ellipse(540,282,60,28,0,0,Math.PI*2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle=shade(c,-8);
+    ctx.beginPath();
+    ctx.moveTo(440,300);
+    ctx.quadraticCurveTo(470,165,540,150);
+    ctx.quadraticCurveTo(610,165,640,300);
+    ctx.quadraticCurveTo(610,350,540,360);
+    ctx.quadraticCurveTo(470,350,440,300);
+    ctx.fill();
+    ctx.fillStyle=shade(c,-18);
+    ctx.beginPath();
+    ctx.moveTo(475,285);
+    ctx.quadraticCurveTo(500,205,540,195);
+    ctx.quadraticCurveTo(580,205,605,285);
+    ctx.quadraticCurveTo(575,315,540,318);
+    ctx.quadraticCurveTo(505,315,475,285);
+    ctx.fill();
+    // drawstrings
+    ctx.strokeStyle='#dadada';
+    ctx.lineWidth=4;
+    ctx.beginPath(); ctx.moveTo(510,310); ctx.lineTo(505,420); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(570,310); ctx.lineTo(575,420); ctx.stroke();
+    ctx.fillStyle=shade(c,-15);
+    roundedRect(425,600,230,92,24,ctx.fillStyle);
+  }
+  ctx.restore();
+}
+
+function shade(hex, amt){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
+  r=Math.max(0,Math.min(255,r));g=Math.max(0,Math.min(255,g));b=Math.max(0,Math.min(255,b));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+function fontFor(style,size){
+  if(style==='classic') return `700 ${size}px Georgia, serif`;
+  if(style==='bold') return `900 ${size}px Arial Black, Arial, sans-serif`;
+  // Replace fallback with your actual @font-face family later.
+  return `900 ${size}px Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif`;
+}
+
+function drawSunStars(){
+  if(!state.accent) return;
+  const s=state.accentSize;
+  const y=state.mainPos.y-90;
+  ctx.save();
+  ctx.fillStyle=state.mainColor;
+  ctx.strokeStyle=state.mainColor;
+  ctx.lineWidth=5;
+
+  // sun
+  ctx.beginPath();ctx.arc(540,y,s*.28,0,Math.PI*2);ctx.fill();
+  for(let i=0;i<8;i++){
+    const a=i*Math.PI/4;
+    const r1=s*.38,r2=s*.58;
+    ctx.beginPath();
+    ctx.moveTo(540+Math.cos(a)*r1,y+Math.sin(a)*r1);
+    ctx.lineTo(540+Math.cos(a)*r2,y+Math.sin(a)*r2);
+    ctx.stroke();
+  }
+  drawStar(540-s*1.05,y,5,s*.18,s*.08);
+  drawStar(540+s*1.05,y,5,s*.18,s*.08);
+  drawStar(540,y+s*.9,5,s*.18,s*.08);
+  ctx.restore();
+}
+
+function drawStar(cx,cy,spikes,outer,inner){
+  let rot=Math.PI/2*3,step=Math.PI/spikes;
+  ctx.beginPath();ctx.moveTo(cx,cy-outer);
+  for(let i=0;i<spikes;i++){
+    ctx.lineTo(cx+Math.cos(rot)*outer,cy+Math.sin(rot)*outer);rot+=step;
+    ctx.lineTo(cx+Math.cos(rot)*inner,cy+Math.sin(rot)*inner);rot+=step;
+  }
+  ctx.closePath();ctx.fill();
+}
+
+function drawTextObject(text,pos,size,color,isMain=false){
+  if(!text) return;
+  ctx.save();
+  ctx.font=isMain?fontFor(state.fontStyle,size):`800 ${size}px Arial, sans-serif`;
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  if(isMain && state.outline){
+    ctx.lineWidth=Math.max(3,size*.08);
+    ctx.strokeStyle='rgba(0,0,0,.35)';
+    ctx.strokeText(text,pos.x,pos.y);
+  }
+  ctx.fillStyle=color;
+  ctx.fillText(text,pos.x,pos.y);
+
+  if(state.selected === (isMain?'main':'sub')){
+    const m=ctx.measureText(text);
+    const w=m.width+30,h=size+24;
+    ctx.strokeStyle='rgba(20,100,255,.75)';
+    ctx.lineWidth=3;
+    ctx.setLineDash([10,7]);
+    ctx.strokeRect(pos.x-w/2,pos.y-h/2,w,h);
+  }
+  ctx.restore();
+}
+
+function drawWatermark(){
+  ctx.save();
+  ctx.font='700 24px Arial, sans-serif';
+  ctx.textAlign='right';
+  ctx.fillStyle='rgba(20,20,20,.58)';
+  ctx.fillText('Made with ART OF METHOD',1038,1040);
+  ctx.restore();
+}
+
+function draw(){
+  ctx.clearRect(0,0,1080,1080);
+  ctx.fillStyle='#f5f5f3';ctx.fillRect(0,0,1080,1080);
+  drawGarment();
+  drawSunStars();
+  drawTextObject(state.mainText,state.mainPos,state.mainSize,state.mainColor,true);
+  drawTextObject(state.subText,state.subPos,state.subSize,state.subColor,false);
+}
+
+function bind(id,event,fn){
+  document.getElementById(id).addEventListener(event,fn);
+}
+bind('mainText','input',e=>{state.mainText=e.target.value.toUpperCase();draw();});
+bind('subText','input',e=>{state.subText=e.target.value.toUpperCase();draw();});
+bind('fontStyle','change',e=>{state.fontStyle=e.target.value;draw();});
+bind('mainSize','input',e=>{state.mainSize=+e.target.value;draw();});
+bind('subSize','input',e=>{state.subSize=+e.target.value;draw();});
+bind('accentSize','input',e=>{state.accentSize=+e.target.value;draw();});
+bind('outlineToggle','change',e=>{state.outline=e.target.checked;draw();});
+bind('sunToggle','change',e=>{state.accent=e.target.checked;draw();});
+
+document.querySelectorAll('.garmentBtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    state.garment=b.dataset.garment;
+    document.querySelectorAll('.garmentBtn').forEach(x=>x.classList.remove('primary'));
+    b.classList.add('primary');
+    draw();
+  });
+});
+
+function centerDesign(){
+  state.mainPos={x:540,y:466};
+  state.subPos={x:540,y:535};
+  draw();
+}
+bind('centerBtn','click',centerDesign);
+
+bind('resetBtn','click',()=>{
+  Object.assign(state,{
+    garment:'crewneck',
+    garmentColor:'#172033',
+    mainText:'EDMONTON',
+    subText:'CANADA',
+    fontStyle:'jeepney',
+    mainSize:95,
+    subSize:36,
+    mainColor:'#f5ead6',
+    subColor:'#f5ead6',
+    outline:true,
+    accent:true,
+    accentSize:58,
+    mainPos:{x:540,y:466},
+    subPos:{x:540,y:535},
+    selected:null
+  });
+  document.getElementById('mainText').value='EDMONTON';
+  document.getElementById('subText').value='CANADA';
+  document.getElementById('fontStyle').value='jeepney';
+  document.getElementById('mainSize').value=95;
+  document.getElementById('subSize').value=36;
+  document.getElementById('accentSize').value=58;
+  document.getElementById('outlineToggle').checked=true;
+  document.getElementById('sunToggle').checked=true;
+  document.querySelectorAll('.garmentBtn').forEach(x=>x.classList.toggle('primary',x.dataset.garment==='crewneck'));
+  [...document.getElementById('garmentSwatches').children].forEach(x=>x.classList.toggle('active',x.dataset.value===state.garmentColor));
+  [...document.getElementById('mainSwatches').children].forEach(x=>x.classList.toggle('active',x.dataset.value===state.mainColor));
+  [...document.getElementById('subSwatches').children].forEach(x=>x.classList.toggle('active',x.dataset.value===state.subColor));
+  draw();
+});
+
+bind('exportBtn','click',()=>{
+  const prev=state.selected;
+  state.selected=null;
+  draw();
+  drawWatermark();
+  const a=document.createElement('a');
+  a.download='art-of-method-sweater.png';
+  a.href=canvas.toDataURL('image/png');
+  a.click();
+  state.selected=prev;
+  draw();
+});
+
+function pointerPos(e){
+  const r=canvas.getBoundingClientRect();
+  return {
+    x:(e.clientX-r.left)*(canvas.width/r.width),
+    y:(e.clientY-r.top)*(canvas.height/r.height)
+  };
+}
+let dragging=false, dragKey=null, offset={x:0,y:0};
+
+canvas.addEventListener('pointerdown',e=>{
+  const p=pointerPos(e);
+  const dist=(a,b)=>Math.hypot(p.x-a.x,p.y-a.y);
+  if(dist(state.mainPos)<150){
+    dragKey='main';
+  } else if(dist(state.subPos)<110){
+    dragKey='sub';
+  } else {
+    state.selected=null; draw(); return;
+  }
+  state.selected=dragKey;
+  const pos=dragKey==='main'?state.mainPos:state.subPos;
+  offset={x:p.x-pos.x,y:p.y-pos.y};
+  dragging=true;
+  canvas.setPointerCapture(e.pointerId);
+  draw();
+});
+canvas.addEventListener('pointermove',e=>{
+  if(!dragging) return;
+  const p=pointerPos(e);
+  const pos=dragKey==='main'?state.mainPos:state.subPos;
+  pos.x=Math.max(260,Math.min(820,p.x-offset.x));
+  pos.y=Math.max(330,Math.min(710,p.y-offset.y));
+  draw();
+});
+canvas.addEventListener('pointerup',e=>{
+  dragging=false;
+  dragKey=null;
+  try{canvas.releasePointerCapture(e.pointerId)}catch(_){}
+});
+
+draw();
+</script>
+</body>
+</html>
