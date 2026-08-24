@@ -173,15 +173,7 @@
   </section>
 
   <aside class="controls">
-    <div class="section">
-      <h2>Garment</h2>
-      <div class="row">
-        <button class="btn garmentBtn primary" data-garment="crewneck">Crewneck</button>
-        <button class="btn garmentBtn" data-garment="hoodie">Hoodie</button>
-      </div>
-      <label>Garment color</label>
-      <div class="swatches" id="garmentSwatches"></div>
-    </div>
+    
 
     <div class="section">
       <h2>Main Text</h2>
@@ -236,6 +228,10 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+  const sweaterImage = new Image();
+sweaterImage.src = 'black-ctft.png';
+sweaterImage.onload = () => draw();
+
 const garmentColors = [
   ['Navy','#172033'],
   ['Black','#171717'],
@@ -288,7 +284,7 @@ function swatches(elId, colors, key){
     el.appendChild(b);
   });
 }
-swatches('garmentSwatches',garmentColors,'garmentColor');
+
 swatches('mainSwatches',inkColors,'mainColor');
 swatches('subSwatches',inkColors,'subColor');
 
@@ -300,95 +296,32 @@ function roundedRect(x,y,w,h,r,fill,stroke){
 }
 
 function drawGarment(){
-  const c=state.garmentColor;
-  ctx.save();
-  ctx.translate(0,20);
+  if (!sweaterImage.complete || !sweaterImage.naturalWidth) return;
 
-  // shadow
-  ctx.globalAlpha=.14;
-  ctx.fillStyle='#000';
-  ctx.beginPath();
-  ctx.ellipse(540,850,340,56,0,0,Math.PI*2);
-  ctx.fill();
-  ctx.globalAlpha=1;
+  const maxWidth = 960;
+  const maxHeight = 960;
 
-  // sleeves
-  ctx.fillStyle=c;
-  ctx.beginPath();
-  ctx.moveTo(350,290);
-  ctx.lineTo(220,380);
-  ctx.lineTo(155,700);
-  ctx.lineTo(258,730);
-  ctx.lineTo(350,510);
-  ctx.closePath();
-  ctx.fill();
+  const ratio = Math.min(
+    maxWidth / sweaterImage.naturalWidth,
+    maxHeight / sweaterImage.naturalHeight
+  );
 
-  ctx.beginPath();
-  ctx.moveTo(730,290);
-  ctx.lineTo(860,380);
-  ctx.lineTo(925,700);
-  ctx.lineTo(822,730);
-  ctx.lineTo(730,510);
-  ctx.closePath();
-  ctx.fill();
+  const width = sweaterImage.naturalWidth * ratio;
+  const height = sweaterImage.naturalHeight * ratio;
 
-  // cuffs
-  ctx.fillStyle=shade(c,-18);
-  roundedRect(148,682,118,58,18,ctx.fillStyle);
-  roundedRect(814,682,118,58,18,ctx.fillStyle);
+  const x = (canvas.width - width) / 2;
+  const y = (canvas.height - height) / 2;
 
-  // torso
-  ctx.fillStyle=c;
-  ctx.beginPath();
-  ctx.moveTo(350,275);
-  ctx.quadraticCurveTo(540,225,730,275);
-  ctx.lineTo(760,790);
-  ctx.quadraticCurveTo(540,825,320,790);
-  ctx.closePath();
-  ctx.fill();
-
-  // ribbed hem
-  ctx.fillStyle=shade(c,-14);
-  roundedRect(310,770,460,62,18,ctx.fillStyle);
-
-  // collar / hood
-  if(state.garment==='crewneck'){
-    ctx.fillStyle=shade(c,-20);
-    ctx.beginPath();
-    ctx.ellipse(540,286,86,42,0,0,Math.PI*2);
-    ctx.fill();
-    ctx.fillStyle='#f5f5f3';
-    ctx.beginPath();
-    ctx.ellipse(540,282,60,28,0,0,Math.PI*2);
-    ctx.fill();
-  } else {
-    ctx.fillStyle=shade(c,-8);
-    ctx.beginPath();
-    ctx.moveTo(440,300);
-    ctx.quadraticCurveTo(470,165,540,150);
-    ctx.quadraticCurveTo(610,165,640,300);
-    ctx.quadraticCurveTo(610,350,540,360);
-    ctx.quadraticCurveTo(470,350,440,300);
-    ctx.fill();
-    ctx.fillStyle=shade(c,-18);
-    ctx.beginPath();
-    ctx.moveTo(475,285);
-    ctx.quadraticCurveTo(500,205,540,195);
-    ctx.quadraticCurveTo(580,205,605,285);
-    ctx.quadraticCurveTo(575,315,540,318);
-    ctx.quadraticCurveTo(505,315,475,285);
-    ctx.fill();
-    // drawstrings
-    ctx.strokeStyle='#dadada';
-    ctx.lineWidth=4;
-    ctx.beginPath(); ctx.moveTo(510,310); ctx.lineTo(505,420); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(570,310); ctx.lineTo(575,420); ctx.stroke();
-    ctx.fillStyle=shade(c,-15);
-    roundedRect(425,600,230,92,24,ctx.fillStyle);
-  }
-  ctx.restore();
+  ctx.drawImage(
+    sweaterImage,
+    x,
+    y,
+    width,
+    height
+  );
 }
 
+  
 function shade(hex, amt){
   const n=parseInt(hex.slice(1),16);
   let r=(n>>16)+amt,g=((n>>8)&255)+amt,b=(n&255)+amt;
@@ -493,14 +426,7 @@ bind('accentSize','input',e=>{state.accentSize=+e.target.value;draw();});
 bind('outlineToggle','change',e=>{state.outline=e.target.checked;draw();});
 bind('sunToggle','change',e=>{state.accent=e.target.checked;draw();});
 
-document.querySelectorAll('.garmentBtn').forEach(b=>{
-  b.addEventListener('click',()=>{
-    state.garment=b.dataset.garment;
-    document.querySelectorAll('.garmentBtn').forEach(x=>x.classList.remove('primary'));
-    b.classList.add('primary');
-    draw();
-  });
-});
+
 
 function centerDesign(){
   state.mainPos={x:540,y:466};
@@ -511,8 +437,7 @@ bind('centerBtn','click',centerDesign);
 
 bind('resetBtn','click',()=>{
   Object.assign(state,{
-    garment:'crewneck',
-    garmentColor:'#172033',
+    
     mainText:'EDMONTON',
     subText:'CANADA',
     fontStyle:'jeepney',
@@ -535,8 +460,7 @@ bind('resetBtn','click',()=>{
   document.getElementById('accentSize').value=58;
   document.getElementById('outlineToggle').checked=true;
   document.getElementById('sunToggle').checked=true;
-  document.querySelectorAll('.garmentBtn').forEach(x=>x.classList.toggle('primary',x.dataset.garment==='crewneck'));
-  [...document.getElementById('garmentSwatches').children].forEach(x=>x.classList.toggle('active',x.dataset.value===state.garmentColor));
+  
   [...document.getElementById('mainSwatches').children].forEach(x=>x.classList.toggle('active',x.dataset.value===state.mainColor));
   [...document.getElementById('subSwatches').children].forEach(x=>x.classList.toggle('active',x.dataset.value===state.subColor));
   draw();
