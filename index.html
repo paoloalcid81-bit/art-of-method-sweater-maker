@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Art of Method Sweater Maker</title>
+<title>Art of Method Custom Apparel Maker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rye&display=swap" rel="stylesheet">
@@ -14,7 +14,6 @@
     --ink: #171717;
     --muted: #6d6d6d;
     --line: #dedede;
-    --accent: #171717;
   }
   * { box-sizing: border-box; }
   body {
@@ -80,6 +79,33 @@
     position: sticky;
     top: 12px;
   }
+  .tab-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    background: #f0f0ee;
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    border: 0;
+    padding: 8px 6px;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .tab-btn.active {
+    background: #ffffff;
+    color: var(--ink);
+    box-shadow: 0 2px 4px rgba(0,0,0,.06);
+  }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
   .section {
     padding: 14px 0;
     border-top: 1px solid var(--line);
@@ -97,15 +123,17 @@
     color: var(--muted);
     margin: 10px 0 6px;
   }
-  input, select, button {
-    font: inherit;
-  }
+  input, select, button { font: inherit; }
   input[type=text], select {
     width: 100%;
     border: 1px solid var(--line);
     border-radius: 10px;
     padding: 10px 11px;
     background: #fff;
+  }
+  input[type=file] {
+    font-size: 12px;
+    width: 100%;
   }
   input[type=range] { width: 100%; }
   .swatches {
@@ -136,12 +164,30 @@
     background: #111;
     color: #fff;
   }
+  .btn.danger {
+    background: #fee2e2;
+    color: #b91c1c;
+    margin-top: 12px;
+    padding: 9px;
+    font-size: 12px;
+  }
   .actions { display: grid; gap: 8px; }
   .checkline {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 13px;
+    margin-bottom: 8px;
+  }
+  .disclaimer {
+    background: #f8f8f7;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-bottom: 14px;
   }
   @media(max-width: 880px) {
     .app { grid-template-columns: 1fr; }
@@ -154,55 +200,99 @@
 <div class="app">
   <section class="stage">
     <div class="brand">
-      <h1>ART OF METHOD — SWEATER MAKER</h1>
+      <h1 id="productTitle">ART OF METHOD — SWEATER MAKER</h1>
       <small>Filipino-inspired custom apparel builder.</small>
     </div>
 
     <div class="canvasWrap">
       <canvas id="canvas" width="1080" height="1080"></canvas>
     </div>
-    <div class="hint">Drag text to reposition within the sweater chest area.</div>
+    <div class="hint">Drag elements to adjust positioning on the chest.</div>
   </section>
 
   <aside class="controls">
-    <div class="section">
-      <h2>Main Text</h2>
-      <label>City / word (Max 15)</label>
-      <input id="mainText" type="text" value="MANILA" maxlength="15" />
-
-      <label>Style</label>
-      <select id="mainFontStyle">
-        <option value="rye">Rye</option>
-        <option value="bold">Bold sans</option>
-        <option value="classic">Classic serif</option>
-      </select>
-
-      <label>Size</label>
-      <input id="mainSize" type="range" min="36" max="110" value="84" />
-
-      <label>Text color</label>
-      <div class="swatches" id="mainSwatches"></div>
-
-      <label class="checkline"><input id="outlineToggle" type="checkbox" checked /> Outline</label>
+    <div class="tab-nav">
+      <button class="tab-btn active" data-target="paneGarment">Apparel</button>
+      <button class="tab-btn" data-target="paneText">Text</button>
+      <button class="tab-btn" data-target="paneUpload">Upload</button>
     </div>
 
-    <div class="section">
-      <h2>Secondary Text</h2>
-      <label>Subtitle (Max 15)</label>
-      <input id="subText" type="text" value="PHILIPPINES" maxlength="15" />
+    <div id="paneGarment" class="tab-pane active">
+      <div class="section">
+        <h2>Apparel Type</h2>
+        <label>Select Silhouette</label>
+        <select id="garmentType">
+          <option value="crewneck">Crewneck Sweater</option>
+        </select>
+      </div>
+    </div>
 
-      <label>Style</label>
-      <select id="subFontStyle">
-        <option value="bold">Bold sans</option>
-        <option value="rye">Rye</option>
-        <option value="classic">Classic serif</option>
-      </select>
+    <div id="paneText" class="tab-pane">
+      <div class="section">
+        <h2>Main Text</h2>
+        <label class="checkline"><input id="showMain" type="checkbox" checked /> Enable Main Text</label>
+        
+        <div id="mainTextControls">
+          <label>City / word (Max 15)</label>
+          <input id="mainText" type="text" value="MANILA" maxlength="15" />
 
-      <label>Size</label>
-      <input id="subSize" type="range" min="18" max="55" value="34" />
+          <label>Style</label>
+          <select id="mainFontStyle">
+            <option value="rye">Rye</option>
+            <option value="bold">Bold sans</option>
+            <option value="classic">Classic serif</option>
+          </select>
 
-      <label>Text color</label>
-      <div class="swatches" id="subSwatches"></div>
+          <label>Size</label>
+          <input id="mainSize" type="range" min="36" max="110" value="84" />
+
+          <label>Text color</label>
+          <div class="swatches" id="mainSwatches"></div>
+
+          <label class="checkline" style="margin-top:10px;"><input id="outlineToggle" type="checkbox" checked /> Outline</label>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Secondary Text</h2>
+        <label class="checkline"><input id="showSub" type="checkbox" checked /> Enable Subtitle</label>
+
+        <div id="subTextControls">
+          <label>Subtitle (Max 15)</label>
+          <input id="subText" type="text" value="PHILIPPINES" maxlength="15" />
+
+          <label>Style</label>
+          <select id="subFontStyle">
+            <option value="bold">Bold sans</option>
+            <option value="rye">Rye</option>
+            <option value="classic">Classic serif</option>
+          </select>
+
+          <label>Size</label>
+          <input id="subSize" type="range" min="18" max="55" value="34" />
+
+          <label>Text color</label>
+          <div class="swatches" id="subSwatches"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="paneUpload" class="tab-pane">
+      <div class="section">
+        <h2>Upload Artwork</h2>
+        <div class="disclaimer">
+          <strong>Privacy Notice:</strong> Uploads are session-based and processed 100% locally in your browser. No files or personal data are stored or uploaded to a server.
+        </div>
+
+        <label>Upload PNG or JPEG</label>
+        <input type="file" id="imageUploader" accept="image/png, image/jpeg" />
+
+        <div id="uploadControls" style="display:none; margin-top:12px;">
+          <label>Graphic Size</label>
+          <input id="customImgSize" type="range" min="80" max="420" value="220" />
+          <button id="removeImgBtn" class="btn danger">Remove Graphic</button>
+        </div>
+      </div>
     </div>
 
     <div class="section actions">
@@ -217,10 +307,67 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-const sweaterImage = new Image();
-sweaterImage.src = 'black-ctft.png';
-sweaterImage.onload = () => draw();
+const APPAREL_CATALOG = {
+  crewneck: {
+    name: 'SWEATER MAKER',
+    imageSrc: 'black-ctft.png',
+    chestBounds: { minX: 420, maxX: 660, minY: 410, maxY: 640, maxTextWidth: 460 },
+    defaultMainPos: { x: 540, y: 480 },
+    defaultSubPos:  { x: 540, y: 550 },
+    defaultImgPos:  { x: 540, y: 430 }
+  },
+  hoodie: {
+    name: 'HOODIE MAKER',
+    imageSrc: 'black-hoodie.png',
+    chestBounds: { minX: 430, maxX: 650, minY: 460, maxY: 620, maxTextWidth: 440 },
+    defaultMainPos: { x: 540, y: 490 },
+    defaultSubPos:  { x: 540, y: 560 },
+    defaultImgPos:  { x: 540, y: 440 }
+  },
+  tshirt: {
+    name: 'T-SHIRT MAKER',
+    imageSrc: 'black-tee.png',
+    chestBounds: { minX: 400, maxX: 680, minY: 380, maxY: 680, maxTextWidth: 480 },
+    defaultMainPos: { x: 540, y: 460 },
+    defaultSubPos:  { x: 540, y: 530 },
+    defaultImgPos:  { x: 540, y: 410 }
+  }
+};
 
+let currentGarmentKey = 'crewneck';
+const garmentImg = new Image();
+
+garmentImg.onload = () => {
+  console.log('Sweater loaded:', garmentImg.src);
+  draw();
+};
+
+garmentImg.onerror = () => {
+  console.warn('Could not load image at path:', garmentImg.src);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#b91c1c';
+  ctx.font = '700 28px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Sweater image could not be loaded', 540, 500);
+
+  ctx.fillStyle = '#666';
+  ctx.font = '20px Arial';
+  ctx.fillText('Check that black-ctft.png is beside index.html', 540, 540);
+};
+
+function loadGarmentImage(key) {
+  currentGarmentKey = key;
+  const config = APPAREL_CATALOG[key];
+  const titleEl = document.getElementById('productTitle');
+  if (titleEl) titleEl.innerText = `ART OF METHOD — ${config.name}`;
+  garmentImg.src = `./${config.imageSrc}`;
+}
+
+loadGarmentImage('crewneck');
 document.fonts.ready.then(() => draw());
 
 const inkColors = [
@@ -232,28 +379,37 @@ const inkColors = [
   ['Black', '#111111']
 ];
 
-const CHEST_BOUNDS = {
-  minX: 420,
-  maxX: 660,
-  minY: 410,
-  maxY: 640,
-  maxTextWidth: 460
-};
+let uploadedImg = null;
 
 let state = {
+  showMain: true,
   mainText: 'MANILA',
-  subText: 'PHILIPPINES',
   mainFontStyle: 'rye',
-  subFontStyle: 'bold',
   mainSize: 84,
-  subSize: 34,
   mainColor: '#f5ead6',
-  subColor: '#f5ead6',
   outline: true,
   mainPos: { x: 540, y: 480 },
+
+  showSub: true,
+  subText: 'PHILIPPINES',
+  subFontStyle: 'bold',
+  subSize: 34,
+  subColor: '#f5ead6',
   subPos: { x: 540, y: 550 },
+
+  customImgSize: 220,
+  customImgPos: { x: 540, y: 430 },
   selected: null
 };
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.target).classList.add('active');
+  });
+});
 
 function swatches(elId, colors, key) {
   const el = document.getElementById(elId);
@@ -277,23 +433,12 @@ swatches('mainSwatches', inkColors, 'mainColor');
 swatches('subSwatches', inkColors, 'subColor');
 
 function drawGarment() {
-  if (!sweaterImage.complete || !sweaterImage.naturalWidth) return;
-
-  const maxWidth = 1080;
-  const maxHeight = 1080;
-
-  const ratio = Math.min(
-    maxWidth / sweaterImage.naturalWidth,
-    maxHeight / sweaterImage.naturalHeight
-  );
-
-  const width = sweaterImage.naturalWidth * ratio;
-  const height = sweaterImage.naturalHeight * ratio;
-
-  const x = (canvas.width - width) / 2;
-  const y = (canvas.height - height) / 2;
-
-  ctx.drawImage(sweaterImage, x, y, width, height);
+  if (garmentImg.complete && garmentImg.naturalWidth) {
+    const ratio = Math.min(1080 / garmentImg.naturalWidth, 1080 / garmentImg.naturalHeight);
+    const width = garmentImg.naturalWidth * ratio;
+    const height = garmentImg.naturalHeight * ratio;
+    ctx.drawImage(garmentImg, (canvas.width - width) / 2, (canvas.height - height) / 2, width, height);
+  }
 }
 
 function fontFor(style, size) {
@@ -303,11 +448,12 @@ function fontFor(style, size) {
 }
 
 function getFittingFontSize(text, style, initialSize) {
+  const bounds = APPAREL_CATALOG[currentGarmentKey].chestBounds;
   let size = initialSize;
   ctx.save();
   while (size > 14) {
     ctx.font = fontFor(style, size);
-    if (ctx.measureText(text).width <= CHEST_BOUNDS.maxTextWidth) break;
+    if (ctx.measureText(text).width <= bounds.maxTextWidth) break;
     size -= 2;
   }
   ctx.restore();
@@ -320,22 +466,37 @@ function getTextBounds(text, pos, size, style) {
   ctx.font = fontFor(style, effectiveSize);
   const m = ctx.measureText(text);
   ctx.restore();
-  const halfW = (m.width + 24) / 2;
-  const halfH = (effectiveSize + 18) / 2;
   return {
-    left: pos.x - halfW,
-    right: pos.x + halfW,
-    top: pos.y - halfH,
-    bottom: pos.y + halfH,
+    left: pos.x - (m.width + 24) / 2,
+    right: pos.x + (m.width + 24) / 2,
+    top: pos.y - (effectiveSize + 18) / 2,
+    bottom: pos.y + (effectiveSize + 18) / 2,
     width: m.width + 24,
     height: effectiveSize + 18,
     effectiveSize: effectiveSize
   };
 }
 
+function drawCustomImage() {
+  if (!uploadedImg) return;
+  const aspect = uploadedImg.width / uploadedImg.height;
+  const w = state.customImgSize;
+  const h = state.customImgSize / aspect;
+  const x = state.customImgPos.x - w / 2;
+  const y = state.customImgPos.y - h / 2;
+
+  ctx.drawImage(uploadedImg, x, y, w, h);
+
+  if (state.selected === 'image') {
+    ctx.strokeStyle = 'rgba(20, 100, 255, .75)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 6]);
+    ctx.strokeRect(x, y, w, h);
+  }
+}
+
 function drawTextObject(text, pos, size, color, style, isMain = false) {
   if (!text) return;
-  
   const bounds = getTextBounds(text, pos, size, style);
 
   ctx.save();
@@ -376,55 +537,121 @@ function draw() {
   ctx.fillRect(0, 0, 1080, 1080);
 
   drawGarment();
-  drawTextObject(state.mainText, state.mainPos, state.mainSize, state.mainColor, state.mainFontStyle, true);
-  drawTextObject(state.subText, state.subPos, state.subSize, state.subColor, state.subFontStyle, false);
+  drawCustomImage();
+
+  if (state.showMain) {
+    drawTextObject(state.mainText, state.mainPos, state.mainSize, state.mainColor, state.mainFontStyle, true);
+  }
+  if (state.showSub) {
+    drawTextObject(state.subText, state.subPos, state.subSize, state.subColor, state.subFontStyle, false);
+  }
 }
 
 function bind(id, event, fn) {
   document.getElementById(id).addEventListener(event, fn);
 }
 
+bind('garmentType', 'change', e => {
+  loadGarmentImage(e.target.value);
+  const cfg = APPAREL_CATALOG[e.target.value];
+  state.mainPos = { ...cfg.defaultMainPos };
+  state.subPos = { ...cfg.defaultSubPos };
+  state.customImgPos = { ...cfg.defaultImgPos };
+  draw();
+});
+
+bind('imageUploader', 'change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    uploadedImg = new Image();
+    uploadedImg.onload = () => {
+      document.getElementById('uploadControls').style.display = 'block';
+      draw();
+    };
+    uploadedImg.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+bind('removeImgBtn', 'click', () => {
+  uploadedImg = null;
+  document.getElementById('imageUploader').value = '';
+  document.getElementById('uploadControls').style.display = 'none';
+  if (state.selected === 'image') state.selected = null;
+  draw();
+});
+
+bind('customImgSize', 'input', e => { state.customImgSize = +e.target.value; draw(); });
+
+bind('showMain', 'change', e => {
+  state.showMain = e.target.checked;
+  document.getElementById('mainTextControls').style.display = state.showMain ? 'block' : 'none';
+  draw();
+});
 bind('mainText', 'input', e => { state.mainText = e.target.value.toUpperCase(); draw(); });
-bind('subText', 'input', e => { state.subText = e.target.value.toUpperCase(); draw(); });
 bind('mainFontStyle', 'change', e => { state.mainFontStyle = e.target.value; draw(); });
-bind('subFontStyle', 'change', e => { state.subFontStyle = e.target.value; draw(); });
 bind('mainSize', 'input', e => { state.mainSize = +e.target.value; draw(); });
-bind('subSize', 'input', e => { state.subSize = +e.target.value; draw(); });
 bind('outlineToggle', 'change', e => { state.outline = e.target.checked; draw(); });
 
-function centerDesign() {
-  state.mainPos = { x: 540, y: 480 };
-  state.subPos = { x: 540, y: 550 };
+bind('showSub', 'change', e => {
+  state.showSub = e.target.checked;
+  document.getElementById('subTextControls').style.display = state.showSub ? 'block' : 'none';
   draw();
-}
-bind('centerBtn', 'click', centerDesign);
+});
+bind('subText', 'input', e => { state.subText = e.target.value.toUpperCase(); draw(); });
+bind('subFontStyle', 'change', e => { state.subFontStyle = e.target.value; draw(); });
+bind('subSize', 'input', e => { state.subSize = +e.target.value; draw(); });
+
+bind('centerBtn', 'click', () => {
+  const cfg = APPAREL_CATALOG[currentGarmentKey];
+  state.mainPos = { ...cfg.defaultMainPos };
+  state.subPos = { ...cfg.defaultSubPos };
+  state.customImgPos = { ...cfg.defaultImgPos };
+  draw();
+});
 
 bind('resetBtn', 'click', () => {
+  const cfg = APPAREL_CATALOG[currentGarmentKey];
   Object.assign(state, {
+    showMain: true,
     mainText: 'MANILA',
-    subText: 'PHILIPPINES',
     mainFontStyle: 'rye',
-    subFontStyle: 'bold',
     mainSize: 84,
-    subSize: 34,
     mainColor: '#f5ead6',
-    subColor: '#f5ead6',
     outline: true,
-    mainPos: { x: 540, y: 480 },
-    subPos: { x: 540, y: 550 },
+    mainPos: { ...cfg.defaultMainPos },
+
+    showSub: true,
+    subText: 'PHILIPPINES',
+    subFontStyle: 'bold',
+    subSize: 34,
+    subColor: '#f5ead6',
+    subPos: { ...cfg.defaultSubPos },
+
+    customImgSize: 220,
+    customImgPos: { ...cfg.defaultImgPos },
     selected: null
   });
 
+  document.getElementById('showMain').checked = true;
+  document.getElementById('mainTextControls').style.display = 'block';
   document.getElementById('mainText').value = 'MANILA';
-  document.getElementById('subText').value = 'PHILIPPINES';
   document.getElementById('mainFontStyle').value = 'rye';
-  document.getElementById('subFontStyle').value = 'bold';
   document.getElementById('mainSize').value = 84;
-  document.getElementById('subSize').value = 34;
   document.getElementById('outlineToggle').checked = true;
 
-  [...document.getElementById('mainSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.mainColor));
-  [...document.getElementById('subSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.subColor));
+  document.getElementById('showSub').checked = true;
+  document.getElementById('subTextControls').style.display = 'block';
+  document.getElementById('subText').value = 'PHILIPPINES';
+  document.getElementById('subFontStyle').value = 'bold';
+  document.getElementById('subSize').value = 34;
+
+  uploadedImg = null;
+  document.getElementById('imageUploader').value = '';
+  document.getElementById('uploadControls').style.display = 'none';
+
   draw();
 });
 
@@ -434,7 +661,7 @@ bind('exportBtn', 'click', () => {
   draw();
   drawWatermark();
   const a = document.createElement('a');
-  a.download = `art-of-method-${state.mainText.toLowerCase() || 'sweater'}.png`;
+  a.download = `art-of-method-${currentGarmentKey}.png`;
   a.href = canvas.toDataURL('image/png');
   a.click();
   state.selected = prev;
@@ -453,34 +680,60 @@ let dragging = false, dragKey = null, offset = { x: 0, y: 0 };
 
 canvas.addEventListener('pointerdown', e => {
   const p = pointerPos(e);
-  const mainB = getTextBounds(state.mainText, state.mainPos, state.mainSize, state.mainFontStyle);
-  const subB = getTextBounds(state.subText, state.subPos, state.subSize, state.subFontStyle);
 
-  if (p.x >= mainB.left && p.x <= mainB.right && p.y >= mainB.top && p.y <= mainB.bottom) {
-    dragKey = 'main';
-  } else if (p.x >= subB.left && p.x <= subB.right && p.y >= subB.top && p.y <= subB.bottom) {
-    dragKey = 'sub';
-  } else {
-    state.selected = null;
-    draw();
-    return;
+  if (uploadedImg) {
+    const aspect = uploadedImg.width / uploadedImg.height;
+    const w = state.customImgSize;
+    const h = state.customImgSize / aspect;
+    if (Math.abs(p.x - state.customImgPos.x) <= w / 2 && Math.abs(p.y - state.customImgPos.y) <= h / 2) {
+      dragKey = 'image';
+      state.selected = 'image';
+      offset = { x: p.x - state.customImgPos.x, y: p.y - state.customImgPos.y };
+      dragging = true;
+      canvas.setPointerCapture(e.pointerId);
+      draw();
+      return;
+    }
   }
 
-  state.selected = dragKey;
-  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
-  offset = { x: p.x - pos.x, y: p.y - pos.y };
-  dragging = true;
-  canvas.setPointerCapture(e.pointerId);
+  if (state.showMain) {
+    const mainB = getTextBounds(state.mainText, state.mainPos, state.mainSize, state.mainFontStyle);
+    if (p.x >= mainB.left && p.x <= mainB.right && p.y >= mainB.top && p.y <= mainB.bottom) {
+      dragKey = 'main';
+      state.selected = 'main';
+      offset = { x: p.x - state.mainPos.x, y: p.y - state.mainPos.y };
+      dragging = true;
+      canvas.setPointerCapture(e.pointerId);
+      draw();
+      return;
+    }
+  }
+
+  if (state.showSub) {
+    const subB = getTextBounds(state.subText, state.subPos, state.subSize, state.subFontStyle);
+    if (p.x >= subB.left && p.x <= subB.right && p.y >= subB.top && p.y <= subB.bottom) {
+      dragKey = 'sub';
+      state.selected = 'sub';
+      offset = { x: p.x - state.subPos.x, y: p.y - state.subPos.y };
+      dragging = true;
+      canvas.setPointerCapture(e.pointerId);
+      draw();
+      return;
+    }
+  }
+
+  state.selected = null;
   draw();
 });
 
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
   const p = pointerPos(e);
-  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
+  const pos = dragKey === 'main' ? state.mainPos : dragKey === 'sub' ? state.subPos : state.customImgPos;
+  const bounds = APPAREL_CATALOG[currentGarmentKey].chestBounds;
   
-  pos.x = Math.max(CHEST_BOUNDS.minX, Math.min(CHEST_BOUNDS.maxX, p.x - offset.x));
-  pos.y = Math.max(CHEST_BOUNDS.minY, Math.min(CHEST_BOUNDS.maxY, p.y - offset.y));
+  pos.x = Math.max(bounds.minX, Math.min(bounds.maxX, p.x - offset.x));
+  pos.y = Math.max(bounds.minY, Math.min(bounds.maxY, p.y - offset.y));
   draw();
 });
 
