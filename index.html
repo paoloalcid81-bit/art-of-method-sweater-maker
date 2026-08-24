@@ -169,8 +169,8 @@
   <aside class="controls">
     <div class="section">
       <h2>Main Text</h2>
-      <label>City / word</label>
-      <input id="mainText" type="text" value="MANILA" maxlength="24" />
+      <label>City / word (Max 15)</label>
+      <input id="mainText" type="text" value="MANILA" maxlength="15" />
 
       <label>Style</label>
       <select id="fontStyle">
@@ -180,7 +180,7 @@
       </select>
 
       <label>Size</label>
-      <input id="mainSize" type="range" min="42" max="150" value="95" />
+      <input id="mainSize" type="range" min="36" max="110" value="80" />
 
       <label>Text color</label>
       <div class="swatches" id="mainSwatches"></div>
@@ -190,11 +190,11 @@
 
     <div class="section">
       <h2>Secondary Text</h2>
-      <label>Subtitle</label>
-      <input id="subText" type="text" value="PHILIPPINES" maxlength="28" />
+      <label>Subtitle (Max 15)</label>
+      <input id="subText" type="text" value="PHILIPPINES" maxlength="15" />
 
       <label>Size</label>
-      <input id="subSize" type="range" min="20" max="70" value="36" />
+      <input id="subSize" type="range" min="18" max="55" value="32" />
 
       <label>Text color</label>
       <div class="swatches" id="subSwatches"></div>
@@ -204,7 +204,7 @@
       <button id="centerBtn" class="btn">Center Design</button>
       <button id="resetBtn" class="btn">Reset</button>
       <button id="exportBtn" class="btn primary">Export PNG</button>
-      <div class="tiny">Prototype note: the “Jeepney / display” option uses a standard browser fallback font stack.</div>
+      <div class="tiny">Text auto-scales to guarantee it stays inside the safe printable chest zone.</div>
     </div>
   </aside>
 </div>
@@ -226,17 +226,19 @@ const inkColors = [
   ['Black', '#111111']
 ];
 
+const SAFE_CHEST_WIDTH = 480;
+
 let state = {
   mainText: 'MANILA',
   subText: 'PHILIPPINES',
   fontStyle: 'jeepney',
-  mainSize: 95,
-  subSize: 36,
+  mainSize: 80,
+  subSize: 32,
   mainColor: '#f5ead6',
   subColor: '#f5ead6',
   outline: true,
   mainPos: { x: 540, y: 490 },
-  subPos: { x: 540, y: 565 },
+  subPos: { x: 540, y: 555 },
   selected: null
 };
 
@@ -264,7 +266,6 @@ swatches('subSwatches', inkColors, 'subColor');
 function drawGarment() {
   if (!sweaterImage.complete || !sweaterImage.naturalWidth) return;
 
-  // Scaled up to 1040 to make the sweater slightly bigger
   const maxWidth = 1040;
   const maxHeight = 1040;
 
@@ -288,15 +289,30 @@ function fontFor(style, size) {
   return `900 ${size}px Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif`;
 }
 
+function getFittingFontSize(text, style, initialSize, isMain) {
+  let size = initialSize;
+  ctx.save();
+  while (size > 14) {
+    ctx.font = isMain ? fontFor(style, size) : `800 ${size}px Arial, sans-serif`;
+    if (ctx.measureText(text).width <= SAFE_CHEST_WIDTH) break;
+    size -= 2;
+  }
+  ctx.restore();
+  return size;
+}
+
 function drawTextObject(text, pos, size, color, isMain = false) {
   if (!text) return;
+  
+  const effectiveSize = getFittingFontSize(text, state.fontStyle, size, isMain);
+
   ctx.save();
-  ctx.font = isMain ? fontFor(state.fontStyle, size) : `800 ${size}px Arial, sans-serif`;
+  ctx.font = isMain ? fontFor(state.fontStyle, effectiveSize) : `800 ${effectiveSize}px Arial, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   if (isMain && state.outline) {
-    ctx.lineWidth = Math.max(3, size * 0.08);
+    ctx.lineWidth = Math.max(3, effectiveSize * 0.08);
     ctx.strokeStyle = 'rgba(0,0,0,.45)';
     ctx.strokeText(text, pos.x, pos.y);
   }
@@ -307,7 +323,7 @@ function drawTextObject(text, pos, size, color, isMain = false) {
   if (state.selected === (isMain ? 'main' : 'sub')) {
     const m = ctx.measureText(text);
     const w = m.width + 24;
-    const h = size + 18;
+    const h = effectiveSize + 18;
     ctx.strokeStyle = 'rgba(20, 100, 255, .75)';
     ctx.lineWidth = 2;
     ctx.setLineDash([8, 6]);
@@ -348,7 +364,7 @@ bind('outlineToggle', 'change', e => { state.outline = e.target.checked; draw();
 
 function centerDesign() {
   state.mainPos = { x: 540, y: 490 };
-  state.subPos = { x: 540, y: 565 };
+  state.subPos = { x: 540, y: 555 };
   draw();
 }
 bind('centerBtn', 'click', centerDesign);
@@ -358,21 +374,21 @@ bind('resetBtn', 'click', () => {
     mainText: 'MANILA',
     subText: 'PHILIPPINES',
     fontStyle: 'jeepney',
-    mainSize: 95,
-    subSize: 36,
+    mainSize: 80,
+    subSize: 32,
     mainColor: '#f5ead6',
     subColor: '#f5ead6',
     outline: true,
     mainPos: { x: 540, y: 490 },
-    subPos: { x: 540, y: 565 },
+    subPos: { x: 540, y: 555 },
     selected: null
   });
 
   document.getElementById('mainText').value = 'MANILA';
   document.getElementById('subText').value = 'PHILIPPINES';
   document.getElementById('fontStyle').value = 'jeepney';
-  document.getElementById('mainSize').value = 95;
-  document.getElementById('subSize').value = 36;
+  document.getElementById('mainSize').value = 80;
+  document.getElementById('subSize').value = 32;
   document.getElementById('outlineToggle').checked = true;
 
   [...document.getElementById('mainSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.mainColor));
@@ -429,8 +445,9 @@ canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
   const p = pointerPos(e);
   const pos = dragKey === 'main' ? state.mainPos : state.subPos;
-  pos.x = Math.max(220, Math.min(860, p.x - offset.x));
-  pos.y = Math.max(340, Math.min(760, p.y - offset.y));
+  // Confines dragging within chest print boundaries
+  pos.x = Math.max(340, Math.min(740, p.x - offset.x));
+  pos.y = Math.max(400, Math.min(680, p.y - offset.y));
   draw();
 });
 
