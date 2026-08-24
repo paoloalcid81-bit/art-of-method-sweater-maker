@@ -4,6 +4,10 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Art of Method Sweater Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Google Font "Rye" provides an authentic ornate Jeepney/signage aesthetic -->
+<link href="https://fonts.googleapis.com/css2?family=Rye&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f5f5f3;
@@ -60,16 +64,7 @@
   canvas {
     width: min(100%, 700px);
     aspect-ratio: 1/1;
-    touch-action: none;
     display: block;
-    cursor: grab;
-  }
-  canvas:active { cursor: grabbing; }
-  .hint {
-    margin-top: 10px;
-    color: var(--muted);
-    font-size: 12px;
-    text-align: center;
   }
   .controls {
     padding: 16px;
@@ -140,11 +135,6 @@
     gap: 8px;
     font-size: 13px;
   }
-  .tiny {
-    font-size: 11px;
-    color: var(--muted);
-    line-height: 1.4;
-  }
   @media(max-width: 880px) {
     .app { grid-template-columns: 1fr; }
     .controls { position: static; }
@@ -163,7 +153,6 @@
     <div class="canvasWrap">
       <canvas id="canvas" width="1080" height="1080"></canvas>
     </div>
-    <div class="hint">Drag the text directly on the sweater to adjust position.</div>
   </section>
 
   <aside class="controls">
@@ -174,7 +163,7 @@
 
       <label>Style</label>
       <select id="fontStyle">
-        <option value="jeepney">Jeepney / display</option>
+        <option value="jeepney">Jeepney display</option>
         <option value="bold">Bold sans</option>
         <option value="classic">Classic serif</option>
       </select>
@@ -201,10 +190,8 @@
     </div>
 
     <div class="section actions">
-      <button id="centerBtn" class="btn">Center Design</button>
       <button id="resetBtn" class="btn">Reset</button>
       <button id="exportBtn" class="btn primary">Export PNG</button>
-      <div class="tiny">Text auto-scales to guarantee it stays inside the safe printable chest zone.</div>
     </div>
   </aside>
 </div>
@@ -216,6 +203,9 @@ const ctx = canvas.getContext('2d');
 const sweaterImage = new Image();
 sweaterImage.src = 'black-ctft.png';
 sweaterImage.onload = () => draw();
+
+// Load the Jeepney font before initial render
+document.fonts.ready.then(() => draw());
 
 const inkColors = [
   ['Cream', '#f5ead6'],
@@ -238,8 +228,7 @@ let state = {
   subColor: '#f5ead6',
   outline: true,
   mainPos: { x: 540, y: 490 },
-  subPos: { x: 540, y: 555 },
-  selected: null
+  subPos: { x: 540, y: 555 }
 };
 
 function swatches(elId, colors, key) {
@@ -284,9 +273,9 @@ function drawGarment() {
 }
 
 function fontFor(style, size) {
+  if (style === 'jeepney') return `400 ${size}px 'Rye', cursive, serif`;
   if (style === 'classic') return `700 ${size}px Georgia, serif`;
-  if (style === 'bold') return `900 ${size}px Arial Black, Arial, sans-serif`;
-  return `900 ${size}px Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif`;
+  return `900 ${size}px Arial Black, Arial, sans-serif`;
 }
 
 function getFittingFontSize(text, style, initialSize, isMain) {
@@ -313,22 +302,12 @@ function drawTextObject(text, pos, size, color, isMain = false) {
 
   if (isMain && state.outline) {
     ctx.lineWidth = Math.max(3, effectiveSize * 0.08);
-    ctx.strokeStyle = 'rgba(0,0,0,.45)';
+    ctx.strokeStyle = 'rgba(0,0,0,.5)';
     ctx.strokeText(text, pos.x, pos.y);
   }
 
   ctx.fillStyle = color;
   ctx.fillText(text, pos.x, pos.y);
-
-  if (state.selected === (isMain ? 'main' : 'sub')) {
-    const m = ctx.measureText(text);
-    const w = m.width + 24;
-    const h = effectiveSize + 18;
-    ctx.strokeStyle = 'rgba(20, 100, 255, .75)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 6]);
-    ctx.strokeRect(pos.x - w / 2, pos.y - h / 2, w, h);
-  }
   ctx.restore();
 }
 
@@ -362,13 +341,6 @@ bind('mainSize', 'input', e => { state.mainSize = +e.target.value; draw(); });
 bind('subSize', 'input', e => { state.subSize = +e.target.value; draw(); });
 bind('outlineToggle', 'change', e => { state.outline = e.target.checked; draw(); });
 
-function centerDesign() {
-  state.mainPos = { x: 540, y: 490 };
-  state.subPos = { x: 540, y: 555 };
-  draw();
-}
-bind('centerBtn', 'click', centerDesign);
-
 bind('resetBtn', 'click', () => {
   Object.assign(state, {
     mainText: 'MANILA',
@@ -380,8 +352,7 @@ bind('resetBtn', 'click', () => {
     subColor: '#f5ead6',
     outline: true,
     mainPos: { x: 540, y: 490 },
-    subPos: { x: 540, y: 555 },
-    selected: null
+    subPos: { x: 540, y: 555 }
   });
 
   document.getElementById('mainText').value = 'MANILA';
@@ -397,64 +368,13 @@ bind('resetBtn', 'click', () => {
 });
 
 bind('exportBtn', 'click', () => {
-  const prev = state.selected;
-  state.selected = null;
   draw();
   drawWatermark();
   const a = document.createElement('a');
   a.download = `art-of-method-${state.mainText.toLowerCase() || 'sweater'}.png`;
   a.href = canvas.toDataURL('image/png');
   a.click();
-  state.selected = prev;
   draw();
-});
-
-function pointerPos(e) {
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: (e.clientX - r.left) * (canvas.width / r.width),
-    y: (e.clientY - r.top) * (canvas.height / r.height)
-  };
-}
-
-let dragging = false, dragKey = null, offset = { x: 0, y: 0 };
-
-canvas.addEventListener('pointerdown', e => {
-  const p = pointerPos(e);
-  const dist = (a, b) => Math.hypot(p.x - a.x, p.y - a.y);
-
-  if (dist(state.mainPos) < 140) {
-    dragKey = 'main';
-  } else if (dist(state.subPos) < 90) {
-    dragKey = 'sub';
-  } else {
-    state.selected = null;
-    draw();
-    return;
-  }
-
-  state.selected = dragKey;
-  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
-  offset = { x: p.x - pos.x, y: p.y - pos.y };
-  dragging = true;
-  canvas.setPointerCapture(e.pointerId);
-  draw();
-});
-
-canvas.addEventListener('pointermove', e => {
-  if (!dragging) return;
-  const p = pointerPos(e);
-  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
-  // Confines dragging within chest print boundaries
-  pos.x = Math.max(340, Math.min(740, p.x - offset.x));
-  pos.y = Math.max(400, Math.min(680, p.y - offset.y));
-  draw();
-});
-
-canvas.addEventListener('pointerup', e => {
-  dragging = false;
-  dragKey = null;
-  try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
 });
 
 draw();
