@@ -170,7 +170,7 @@
     <div class="section">
       <h2>Main Text</h2>
       <label>City / word</label>
-      <input id="mainText" type="text" value="EDMONTON" maxlength="24" />
+      <input id="mainText" type="text" value="MANILA" maxlength="24" />
 
       <label>Style</label>
       <select id="fontStyle">
@@ -191,20 +191,13 @@
     <div class="section">
       <h2>Secondary Text</h2>
       <label>Subtitle</label>
-      <input id="subText" type="text" value="CANADA" maxlength="28" />
+      <input id="subText" type="text" value="PHILIPPINES" maxlength="28" />
 
       <label>Size</label>
       <input id="subSize" type="range" min="20" max="70" value="36" />
 
       <label>Text color</label>
       <div class="swatches" id="subSwatches"></div>
-    </div>
-
-    <div class="section">
-      <h2>Filipino Accent</h2>
-      <label class="checkline"><input id="sunToggle" type="checkbox" checked /> Philippine-inspired sun + stars</label>
-      <label>Accent size</label>
-      <input id="accentSize" type="range" min="30" max="95" value="58" />
     </div>
 
     <div class="section actions">
@@ -234,18 +227,16 @@ const inkColors = [
 ];
 
 let state = {
-  mainText: 'EDMONTON',
-  subText: 'CANADA',
+  mainText: 'MANILA',
+  subText: 'PHILIPPINES',
   fontStyle: 'jeepney',
   mainSize: 95,
   subSize: 36,
   mainColor: '#f5ead6',
   subColor: '#f5ead6',
   outline: true,
-  accent: true,
-  accentSize: 58,
-  mainPos: { x: 540, y: 500 },
-  subPos: { x: 540, y: 575 },
+  mainPos: { x: 540, y: 490 },
+  subPos: { x: 540, y: 565 },
   selected: null
 };
 
@@ -273,8 +264,9 @@ swatches('subSwatches', inkColors, 'subColor');
 function drawGarment() {
   if (!sweaterImage.complete || !sweaterImage.naturalWidth) return;
 
-  const maxWidth = 960;
-  const maxHeight = 960;
+  // Scaled up to 1040 to make the sweater slightly bigger
+  const maxWidth = 1040;
+  const maxHeight = 1040;
 
   const ratio = Math.min(
     maxWidth / sweaterImage.naturalWidth,
@@ -294,54 +286,6 @@ function fontFor(style, size) {
   if (style === 'classic') return `700 ${size}px Georgia, serif`;
   if (style === 'bold') return `900 ${size}px Arial Black, Arial, sans-serif`;
   return `900 ${size}px Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif`;
-}
-
-function drawSunStars() {
-  if (!state.accent) return;
-  const s = state.accentSize;
-  const cx = state.mainPos.x;
-  const cy = state.mainPos.y - (state.mainSize * 0.58 + s * 0.65);
-
-  ctx.save();
-  ctx.fillStyle = state.mainColor;
-  ctx.strokeStyle = state.mainColor;
-  ctx.lineWidth = Math.max(3, s * 0.08);
-
-  // Center Sun
-  ctx.beginPath();
-  ctx.arc(cx, cy, s * 0.28, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Sun rays
-  for (let i = 0; i < 8; i++) {
-    const a = (i * Math.PI) / 4;
-    const r1 = s * 0.38, r2 = s * 0.60;
-    ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
-    ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
-    ctx.stroke();
-  }
-
-  // 3 Stars
-  drawStar(cx - s * 1.15, cy, 5, s * 0.18, s * 0.08);
-  drawStar(cx + s * 1.15, cy, 5, s * 0.18, s * 0.08);
-  drawStar(cx, cy + s * 0.95, 5, s * 0.18, s * 0.08);
-  ctx.restore();
-}
-
-function drawStar(cx, cy, spikes, outer, inner) {
-  let rot = (Math.PI / 2) * 3;
-  const step = Math.PI / spikes;
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - outer);
-  for (let i = 0; i < spikes; i++) {
-    ctx.lineTo(cx + Math.cos(rot) * outer, cy + Math.sin(rot) * outer);
-    rot += step;
-    ctx.lineTo(cx + Math.cos(rot) * inner, cy + Math.sin(rot) * inner);
-    rot += step;
-  }
-  ctx.closePath();
-  ctx.fill();
 }
 
 function drawTextObject(text, pos, size, color, isMain = false) {
@@ -387,7 +331,6 @@ function draw() {
   ctx.fillRect(0, 0, 1080, 1080);
 
   drawGarment();
-  drawSunStars();
   drawTextObject(state.mainText, state.mainPos, state.mainSize, state.mainColor, true);
   drawTextObject(state.subText, state.subPos, state.subSize, state.subColor, false);
 }
@@ -401,42 +344,36 @@ bind('subText', 'input', e => { state.subText = e.target.value.toUpperCase(); dr
 bind('fontStyle', 'change', e => { state.fontStyle = e.target.value; draw(); });
 bind('mainSize', 'input', e => { state.mainSize = +e.target.value; draw(); });
 bind('subSize', 'input', e => { state.subSize = +e.target.value; draw(); });
-bind('accentSize', 'input', e => { state.accentSize = +e.target.value; draw(); });
 bind('outlineToggle', 'change', e => { state.outline = e.target.checked; draw(); });
-bind('sunToggle', 'change', e => { state.accent = e.target.checked; draw(); });
 
 function centerDesign() {
-  state.mainPos = { x: 540, y: 500 };
-  state.subPos = { x: 540, y: 575 };
+  state.mainPos = { x: 540, y: 490 };
+  state.subPos = { x: 540, y: 565 };
   draw();
 }
 bind('centerBtn', 'click', centerDesign);
 
 bind('resetBtn', 'click', () => {
   Object.assign(state, {
-    mainText: 'EDMONTON',
-    subText: 'CANADA',
+    mainText: 'MANILA',
+    subText: 'PHILIPPINES',
     fontStyle: 'jeepney',
     mainSize: 95,
     subSize: 36,
     mainColor: '#f5ead6',
     subColor: '#f5ead6',
     outline: true,
-    accent: true,
-    accentSize: 58,
-    mainPos: { x: 540, y: 500 },
-    subPos: { x: 540, y: 575 },
+    mainPos: { x: 540, y: 490 },
+    subPos: { x: 540, y: 565 },
     selected: null
   });
 
-  document.getElementById('mainText').value = 'EDMONTON';
-  document.getElementById('subText').value = 'CANADA';
+  document.getElementById('mainText').value = 'MANILA';
+  document.getElementById('subText').value = 'PHILIPPINES';
   document.getElementById('fontStyle').value = 'jeepney';
   document.getElementById('mainSize').value = 95;
   document.getElementById('subSize').value = 36;
-  document.getElementById('accentSize').value = 58;
   document.getElementById('outlineToggle').checked = true;
-  document.getElementById('sunToggle').checked = true;
 
   [...document.getElementById('mainSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.mainColor));
   [...document.getElementById('subSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.subColor));
