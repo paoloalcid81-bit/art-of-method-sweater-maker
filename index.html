@@ -488,10 +488,18 @@ function drawCustomImage() {
   ctx.drawImage(uploadedImg, x, y, w, h);
 
   if (state.selected === 'image') {
-    ctx.strokeStyle = 'rgba(20, 100, 255, .75)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([8, 6]);
-    ctx.strokeRect(x, y, w, h);
+  ctx.strokeStyle = 'rgba(20, 100, 255, .75)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([8, 6]);
+  ctx.strokeRect(x, y, w, h);
+
+  // Resize handle
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#1464ff';
+  ctx.lineWidth = 3;
+  ctx.fillRect(x + w - 10, y + h - 10, 20, 20);
+  ctx.strokeRect(x + w - 10, y + h - 10, 20, 20);
   }
 }
 
@@ -681,20 +689,48 @@ let dragging = false, dragKey = null, offset = { x: 0, y: 0 };
 canvas.addEventListener('pointerdown', e => {
   const p = pointerPos(e);
 
-  if (uploadedImg) {
-    const aspect = uploadedImg.width / uploadedImg.height;
-    const w = state.customImgSize;
-    const h = state.customImgSize / aspect;
-    if (Math.abs(p.x - state.customImgPos.x) <= w / 2 && Math.abs(p.y - state.customImgPos.y) <= h / 2) {
-      dragKey = 'image';
-      state.selected = 'image';
-      offset = { x: p.x - state.customImgPos.x, y: p.y - state.customImgPos.y };
-      dragging = true;
-      canvas.setPointerCapture(e.pointerId);
-      draw();
-      return;
-    }
+ if (uploadedImg) {
+  const aspect = uploadedImg.width / uploadedImg.height;
+  const w = state.customImgSize;
+  const h = state.customImgSize / aspect;
+
+  const imageLeft = state.customImgPos.x - w / 2;
+  const imageTop = state.customImgPos.y - h / 2;
+
+  const handleX = imageLeft + w;
+  const handleY = imageTop + h;
+
+  // First: check resize handle
+  if (
+    Math.abs(p.x - handleX) <= 20 &&
+    Math.abs(p.y - handleY) <= 20 &&
+    state.selected === 'image'
+  ) {
+    dragKey = 'image-resize';
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    return;
   }
+
+  // Otherwise: normal image dragging
+  if (
+    Math.abs(p.x - state.customImgPos.x) <= w / 2 &&
+    Math.abs(p.y - state.customImgPos.y) <= h / 2
+  ) {
+    dragKey = 'image';
+    state.selected = 'image';
+
+    offset = {
+      x: p.x - state.customImgPos.x,
+      y: p.y - state.customImgPos.y
+    };
+
+    dragging = true;
+    canvas.setPointerCapture(e.pointerId);
+    draw();
+    return;
+  }
+}
 
   if (state.showMain) {
     const mainB = getTextBounds(state.mainText, state.mainPos, state.mainSize, state.mainFontStyle);
@@ -728,12 +764,50 @@ canvas.addEventListener('pointerdown', e => {
 
 canvas.addEventListener('pointermove', e => {
   if (!dragging) return;
+
   const p = pointerPos(e);
-  const pos = dragKey === 'main' ? state.mainPos : dragKey === 'sub' ? state.subPos : state.customImgPos;
+
+  // Resize uploaded image
+  if (dragKey === 'image-resize' && uploadedImg) {
+    const dx = p.x - state.customImgPos.x;
+    const dy = p.y - state.customImgPos.y;
+
+    const aspect = uploadedImg.width / uploadedImg.height;
+
+    let newWidth = Math.max(
+      Math.abs(dx) * 2,
+      Math.abs(dy) * 2 * aspect
+    );
+
+    newWidth = Math.max(80, Math.min(420, newWidth));
+
+    state.customImgSize = newWidth;
+    document.getElementById('customImgSize').value = newWidth;
+
+    draw();
+    return;
+  }
+
+  // Move main text, subtitle, or uploaded image
+  const pos =
+    dragKey === 'main'
+      ? state.mainPos
+      : dragKey === 'sub'
+      ? state.subPos
+      : state.customImgPos;
+
   const bounds = APPAREL_CATALOG[currentGarmentKey].chestBounds;
-  
-  pos.x = Math.max(bounds.minX, Math.min(bounds.maxX, p.x - offset.x));
-  pos.y = Math.max(bounds.minY, Math.min(bounds.maxY, p.y - offset.y));
+
+  pos.x = Math.max(
+    bounds.minX,
+    Math.min(bounds.maxX, p.x - offset.x)
+  );
+
+  pos.y = Math.max(
+    bounds.minY,
+    Math.min(bounds.maxY, p.y - offset.y)
+  );
+
   draw();
 });
 
