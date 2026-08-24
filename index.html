@@ -11,41 +11,40 @@
     --ink: #171717;
     --muted: #6d6d6d;
     --line: #dedede;
+    --accent: #171717;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
-    font-family: Inter, system-ui, -apple-system, sans-serif;
+    font-family: Inter, Arial, Helvetica, sans-serif;
     background: var(--bg);
     color: var(--ink);
   }
   .app {
-    max-width: 1200px;
+    max-width: 1180px;
     margin: auto;
-    padding: 20px;
+    padding: 18px;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
-    gap: 20px;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 18px;
   }
   .stage, .controls {
     background: var(--panel);
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 18px;
   }
   .stage {
-    padding: 20px;
+    min-height: 720px;
+    padding: 18px;
     display: flex;
     flex-direction: column;
   }
   .brand {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
   .brand h1 {
-    font-size: 16px;
-    margin: 0;
+    font-size: 18px;
+    margin: 0 0 4px;
     letter-spacing: .08em;
   }
   .brand small { color: var(--muted); }
@@ -53,12 +52,13 @@
     flex: 1;
     display: grid;
     place-items: center;
-    background: #e8e8e6;
-    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
     overflow: hidden;
   }
   canvas {
-    width: min(100%, 650px);
+    width: min(100%, 700px);
     aspect-ratio: 1/1;
     touch-action: none;
     display: block;
@@ -66,16 +66,16 @@
   }
   canvas:active { cursor: grabbing; }
   .hint {
-    margin-top: 12px;
+    margin-top: 10px;
     color: var(--muted);
     font-size: 12px;
     text-align: center;
   }
   .controls {
-    padding: 20px;
+    padding: 16px;
     height: max-content;
     position: sticky;
-    top: 20px;
+    top: 12px;
   }
   .section {
     padding: 14px 0;
@@ -83,25 +83,26 @@
   }
   .section:first-child { border-top: 0; padding-top: 0; }
   .section h2 {
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: .12em;
+    letter-spacing: .13em;
     margin: 0 0 10px;
-    color: var(--muted);
   }
   label {
     display: block;
     font-size: 12px;
+    color: var(--muted);
     margin: 10px 0 6px;
-    font-weight: 500;
+  }
+  input, select, button {
+    font: inherit;
   }
   input[type=text], select {
     width: 100%;
     border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 9px 12px;
+    border-radius: 10px;
+    padding: 10px 11px;
     background: #fff;
-    font: inherit;
   }
   input[type=range] { width: 100%; }
   .swatches {
@@ -110,23 +111,23 @@
     gap: 8px;
   }
   .swatch {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: 2px solid #fff;
     outline: 1px solid #cfcfcf;
     cursor: pointer;
   }
-  .swatch.active { outline: 2px solid var(--ink); }
+  .swatch.active { outline: 3px solid #111; }
   .btn {
     width: 100%;
     border: 0;
-    border-radius: 10px;
-    padding: 11px 14px;
+    border-radius: 11px;
+    padding: 11px 12px;
     cursor: pointer;
     background: #ececec;
     color: #111;
-    font-weight: 600;
+    font-weight: 700;
   }
   .btn.primary {
     background: #111;
@@ -138,11 +139,16 @@
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    margin-top: 10px;
+  }
+  .tiny {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
   }
   @media(max-width: 880px) {
     .app { grid-template-columns: 1fr; }
     .controls { position: static; }
+    .stage { min-height: 0; }
   }
 </style>
 </head>
@@ -150,42 +156,33 @@
 <div class="app">
   <section class="stage">
     <div class="brand">
-      <div>
-        <h1>ART OF METHOD</h1>
-        <small>Filipino-Inspired City Sweater Maker</small>
-      </div>
-      <small id="status">Ready</small>
+      <h1>ART OF METHOD — SWEATER MAKER</h1>
+      <small>Filipino-inspired custom apparel builder.</small>
     </div>
 
     <div class="canvasWrap">
       <canvas id="canvas" width="1080" height="1080"></canvas>
     </div>
-    <div class="hint">Drag text directly on the canvas to reposition.</div>
+    <div class="hint">Drag the text directly on the sweater to adjust position.</div>
   </section>
 
   <aside class="controls">
     <div class="section">
-      <h2>Garment</h2>
-      <label>Garment Color</label>
-      <div class="swatches" id="garmentSwatches"></div>
-    </div>
-
-    <div class="section">
-      <h2>Primary Text</h2>
-      <label>City / Word</label>
+      <h2>Main Text</h2>
+      <label>City / word</label>
       <input id="mainText" type="text" value="EDMONTON" maxlength="24" />
 
-      <label>Typography</label>
+      <label>Style</label>
       <select id="fontStyle">
-        <option value="jeepney">Jeepney / Display</option>
-        <option value="bold">Bold Sans</option>
-        <option value="classic">Classic Serif</option>
+        <option value="jeepney">Jeepney / display</option>
+        <option value="bold">Bold sans</option>
+        <option value="classic">Classic serif</option>
       </select>
 
       <label>Size</label>
-      <input id="mainSize" type="range" min="40" max="140" value="95" />
+      <input id="mainSize" type="range" min="42" max="150" value="95" />
 
-      <label>Ink Color</label>
+      <label>Text color</label>
       <div class="swatches" id="mainSwatches"></div>
 
       <label class="checkline"><input id="outlineToggle" type="checkbox" checked /> Outline</label>
@@ -199,21 +196,22 @@
       <label>Size</label>
       <input id="subSize" type="range" min="20" max="70" value="36" />
 
-      <label>Ink Color</label>
+      <label>Text color</label>
       <div class="swatches" id="subSwatches"></div>
     </div>
 
     <div class="section">
-      <h2>Accent</h2>
-      <label class="checkline"><input id="sunToggle" type="checkbox" checked /> Philippine Sun &amp; Stars</label>
-      <label>Accent Size</label>
-      <input id="accentSize" type="range" min="30" max="90" value="58" />
+      <h2>Filipino Accent</h2>
+      <label class="checkline"><input id="sunToggle" type="checkbox" checked /> Philippine-inspired sun + stars</label>
+      <label>Accent size</label>
+      <input id="accentSize" type="range" min="30" max="95" value="58" />
     </div>
 
     <div class="section actions">
-      <button id="centerBtn" class="btn">Center Elements</button>
-      <button id="resetBtn" class="btn">Reset Default</button>
-      <button id="exportBtn" class="btn primary">Export Image (PNG)</button>
+      <button id="centerBtn" class="btn">Center Design</button>
+      <button id="resetBtn" class="btn">Reset</button>
+      <button id="exportBtn" class="btn primary">Export PNG</button>
+      <div class="tiny">Prototype note: the “Jeepney / display” option uses a standard browser fallback font stack.</div>
     </div>
   </aside>
 </div>
@@ -222,14 +220,9 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
-const garmentColors = [
-  ['Navy', '#172033'],
-  ['Black', '#1a1a1a'],
-  ['Cream', '#ece5d7'],
-  ['Heather', '#8e9297'],
-  ['Forest', '#243b2d'],
-  ['Maroon', '#5a2530']
-];
+const sweaterImage = new Image();
+sweaterImage.src = 'black-ctft.png';
+sweaterImage.onload = () => draw();
 
 const inkColors = [
   ['Cream', '#f5ead6'],
@@ -241,7 +234,6 @@ const inkColors = [
 ];
 
 let state = {
-  garmentColor: '#172033',
   mainText: 'EDMONTON',
   subText: 'CANADA',
   fontStyle: 'jeepney',
@@ -252,25 +244,21 @@ let state = {
   outline: true,
   accent: true,
   accentSize: 58,
-  mainPos: { x: 540, y: 490 },
-  subPos: { x: 540, y: 565 },
+  mainPos: { x: 540, y: 500 },
+  subPos: { x: 540, y: 575 },
   selected: null
 };
 
-const sweaterImage = new Image();
-sweaterImage.src = 'black-ctft.png';
-sweaterImage.onload = () => draw();
-
-function createSwatches(elId, colors, stateKey) {
+function swatches(elId, colors, key) {
   const el = document.getElementById(elId);
   colors.forEach(([name, value]) => {
     const b = document.createElement('button');
-    b.className = 'swatch' + (state[stateKey] === value ? ' active' : '');
+    b.className = 'swatch' + (state[key] === value ? ' active' : '');
     b.style.background = value;
     b.title = name;
     b.dataset.value = value;
     b.addEventListener('click', () => {
-      state[stateKey] = value;
+      state[key] = value;
       [...el.children].forEach(x => x.classList.remove('active'));
       b.classList.add('active');
       draw();
@@ -279,70 +267,55 @@ function createSwatches(elId, colors, stateKey) {
   });
 }
 
-createSwatches('garmentSwatches', garmentColors, 'garmentColor');
-createSwatches('mainSwatches', inkColors, 'mainColor');
-createSwatches('subSwatches', inkColors, 'subColor');
-
-function drawGarmentFallback() {
-  ctx.save();
-  ctx.fillStyle = state.garmentColor;
-  ctx.beginPath();
-  // Body silhouette
-  ctx.moveTo(320, 260);
-  ctx.lineTo(200, 420);
-  ctx.lineTo(270, 470);
-  ctx.lineTo(330, 390);
-  ctx.lineTo(330, 840);
-  ctx.lineTo(750, 840);
-  ctx.lineTo(750, 390);
-  ctx.lineTo(810, 470);
-  ctx.lineTo(880, 420);
-  ctx.lineTo(760, 260);
-  ctx.quadraticCurveTo(540, 330, 320, 260);
-  ctx.fill();
-  ctx.restore();
-}
+swatches('mainSwatches', inkColors, 'mainColor');
+swatches('subSwatches', inkColors, 'subColor');
 
 function drawGarment() {
-  if (!sweaterImage.complete || !sweaterImage.naturalWidth) {
-    drawGarmentFallback();
-    return;
-  }
-  const ratio = Math.min(960 / sweaterImage.naturalWidth, 960 / sweaterImage.naturalHeight);
+  if (!sweaterImage.complete || !sweaterImage.naturalWidth) return;
+
+  const maxWidth = 960;
+  const maxHeight = 960;
+
+  const ratio = Math.min(
+    maxWidth / sweaterImage.naturalWidth,
+    maxHeight / sweaterImage.naturalHeight
+  );
+
   const width = sweaterImage.naturalWidth * ratio;
   const height = sweaterImage.naturalHeight * ratio;
+
   const x = (canvas.width - width) / 2;
   const y = (canvas.height - height) / 2;
 
   ctx.drawImage(sweaterImage, x, y, width, height);
 }
 
-function getFont(style, size) {
+function fontFor(style, size) {
   if (style === 'classic') return `700 ${size}px Georgia, serif`;
-  if (style === 'bold') return `900 ${size}px 'Arial Black', Arial, sans-serif`;
-  return `900 ${size}px Impact, Haettenschweiler, sans-serif`;
+  if (style === 'bold') return `900 ${size}px Arial Black, Arial, sans-serif`;
+  return `900 ${size}px Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif`;
 }
 
 function drawSunStars() {
   if (!state.accent) return;
   const s = state.accentSize;
   const cx = state.mainPos.x;
-  const cy = state.mainPos.y - (state.mainSize * 0.7 + s * 0.7);
+  const cy = state.mainPos.y - (state.mainSize * 0.58 + s * 0.65);
 
   ctx.save();
   ctx.fillStyle = state.mainColor;
   ctx.strokeStyle = state.mainColor;
   ctx.lineWidth = Math.max(3, s * 0.08);
 
-  // Central Sun
+  // Center Sun
   ctx.beginPath();
   ctx.arc(cx, cy, s * 0.28, 0, Math.PI * 2);
   ctx.fill();
 
-  // Rays
+  // Sun rays
   for (let i = 0; i < 8; i++) {
     const a = (i * Math.PI) / 4;
-    const r1 = s * 0.38, r2 = s * 0.62;
+    const r1 = s * 0.38, r2 = s * 0.60;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
     ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
@@ -371,16 +344,16 @@ function drawStar(cx, cy, spikes, outer, inner) {
   ctx.fill();
 }
 
-function drawTextItem(text, pos, size, color, isMain) {
+function drawTextObject(text, pos, size, color, isMain = false) {
   if (!text) return;
   ctx.save();
-  ctx.font = isMain ? getFont(state.fontStyle, size) : `800 ${size}px Arial, sans-serif`;
+  ctx.font = isMain ? fontFor(state.fontStyle, size) : `800 ${size}px Arial, sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   if (isMain && state.outline) {
     ctx.lineWidth = Math.max(3, size * 0.08);
-    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+    ctx.strokeStyle = 'rgba(0,0,0,.45)';
     ctx.strokeText(text, pos.x, pos.y);
   }
 
@@ -390,8 +363,8 @@ function drawTextItem(text, pos, size, color, isMain) {
   if (state.selected === (isMain ? 'main' : 'sub')) {
     const m = ctx.measureText(text);
     const w = m.width + 24;
-    const h = size + 16;
-    ctx.strokeStyle = 'rgba(30, 120, 255, 0.8)';
+    const h = size + 18;
+    ctx.strokeStyle = 'rgba(20, 100, 255, .75)';
     ctx.lineWidth = 2;
     ctx.setLineDash([8, 6]);
     ctx.strokeRect(pos.x - w / 2, pos.y - h / 2, w, h);
@@ -403,85 +376,24 @@ function drawWatermark() {
   ctx.save();
   ctx.font = '700 22px Arial, sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillStyle = 'rgba(20,20,20,0.45)';
-  ctx.fillText('Art of Method Customizer', 1040, 1045);
+  ctx.fillStyle = 'rgba(20, 20, 20, .5)';
+  ctx.fillText('Made with ART OF METHOD', 1040, 1045);
   ctx.restore();
 }
 
 function draw() {
   ctx.clearRect(0, 0, 1080, 1080);
-  ctx.fillStyle = '#f5f5f3';
+  ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, 1080, 1080);
 
   drawGarment();
   drawSunStars();
-  drawTextItem(state.mainText, state.mainPos, state.mainSize, state.mainColor, true);
-  drawTextItem(state.subText, state.subPos, state.subSize, state.subColor, false);
+  drawTextObject(state.mainText, state.mainPos, state.mainSize, state.mainColor, true);
+  drawTextObject(state.subText, state.subPos, state.subSize, state.subColor, false);
 }
 
-function getTextBounds(text, pos, size, fontStyle, isMain) {
-  ctx.save();
-  ctx.font = isMain ? getFont(fontStyle, size) : `800 ${size}px Arial, sans-serif`;
-  const metrics = ctx.measureText(text);
-  ctx.restore();
-  return {
-    left: pos.x - metrics.width / 2 - 12,
-    right: pos.x + metrics.width / 2 + 12,
-    top: pos.y - size / 2 - 8,
-    bottom: pos.y + size / 2 + 8
-  };
-}
-
-function getPointer(e) {
-  const r = canvas.getBoundingClientRect();
-  return {
-    x: (e.clientX - r.left) * (canvas.width / r.width),
-    y: (e.clientY - r.top) * (canvas.height / r.height)
-  };
-}
-
-let dragging = false, dragKey = null, dragOffset = { x: 0, y: 0 };
-
-canvas.addEventListener('pointerdown', e => {
-  const p = getPointer(e);
-  const mainB = getTextBounds(state.mainText, state.mainPos, state.mainSize, state.fontStyle, true);
-  const subB = getTextBounds(state.subText, state.subPos, state.subSize, state.fontStyle, false);
-
-  if (p.x >= mainB.left && p.x <= mainB.right && p.y >= mainB.top && p.y <= mainB.bottom) {
-    dragKey = 'main';
-  } else if (p.x >= subB.left && p.x <= subB.right && p.y >= subB.top && p.y <= subB.bottom) {
-    dragKey = 'sub';
-  } else {
-    state.selected = null;
-    draw();
-    return;
-  }
-
-  state.selected = dragKey;
-  const target = dragKey === 'main' ? state.mainPos : state.subPos;
-  dragOffset = { x: p.x - target.x, y: p.y - target.y };
-  dragging = true;
-  canvas.setPointerCapture(e.pointerId);
-  draw();
-});
-
-canvas.addEventListener('pointermove', e => {
-  if (!dragging) return;
-  const p = getPointer(e);
-  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
-  pos.x = Math.max(200, Math.min(880, p.x - dragOffset.x));
-  pos.y = Math.max(260, Math.min(840, p.y - dragOffset.y));
-  draw();
-});
-
-canvas.addEventListener('pointerup', e => {
-  dragging = false;
-  dragKey = null;
-  try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
-});
-
-function bind(id, evt, fn) {
-  document.getElementById(id).addEventListener(evt, fn);
+function bind(id, event, fn) {
+  document.getElementById(id).addEventListener(event, fn);
 }
 
 bind('mainText', 'input', e => { state.mainText = e.target.value.toUpperCase(); draw(); });
@@ -493,26 +405,29 @@ bind('accentSize', 'input', e => { state.accentSize = +e.target.value; draw(); }
 bind('outlineToggle', 'change', e => { state.outline = e.target.checked; draw(); });
 bind('sunToggle', 'change', e => { state.accent = e.target.checked; draw(); });
 
-bind('centerBtn', 'click', () => {
-  state.mainPos = { x: 540, y: 490 };
-  state.subPos = { x: 540, y: 565 };
+function centerDesign() {
+  state.mainPos = { x: 540, y: 500 };
+  state.subPos = { x: 540, y: 575 };
   draw();
-});
+}
+bind('centerBtn', 'click', centerDesign);
 
 bind('resetBtn', 'click', () => {
-  state.mainText = 'EDMONTON';
-  state.subText = 'CANADA';
-  state.fontStyle = 'jeepney';
-  state.mainSize = 95;
-  state.subSize = 36;
-  state.mainColor = '#f5ead6';
-  state.subColor = '#f5ead6';
-  state.outline = true;
-  state.accent = true;
-  state.accentSize = 58;
-  state.mainPos = { x: 540, y: 490 };
-  state.subPos = { x: 540, y: 565 };
-  state.selected = null;
+  Object.assign(state, {
+    mainText: 'EDMONTON',
+    subText: 'CANADA',
+    fontStyle: 'jeepney',
+    mainSize: 95,
+    subSize: 36,
+    mainColor: '#f5ead6',
+    subColor: '#f5ead6',
+    outline: true,
+    accent: true,
+    accentSize: 58,
+    mainPos: { x: 540, y: 500 },
+    subPos: { x: 540, y: 575 },
+    selected: null
+  });
 
   document.getElementById('mainText').value = 'EDMONTON';
   document.getElementById('subText').value = 'CANADA';
@@ -522,20 +437,70 @@ bind('resetBtn', 'click', () => {
   document.getElementById('accentSize').value = 58;
   document.getElementById('outlineToggle').checked = true;
   document.getElementById('sunToggle').checked = true;
+
+  [...document.getElementById('mainSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.mainColor));
+  [...document.getElementById('subSwatches').children].forEach(x => x.classList.toggle('active', x.dataset.value === state.subColor));
   draw();
 });
 
 bind('exportBtn', 'click', () => {
-  const prevSelected = state.selected;
+  const prev = state.selected;
   state.selected = null;
   draw();
   drawWatermark();
-  const link = document.createElement('a');
-  link.download = `art-of-method-${state.mainText.toLowerCase() || 'design'}.png`;
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-  state.selected = prevSelected;
+  const a = document.createElement('a');
+  a.download = `art-of-method-${state.mainText.toLowerCase() || 'sweater'}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  state.selected = prev;
   draw();
+});
+
+function pointerPos(e) {
+  const r = canvas.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (canvas.width / r.width),
+    y: (e.clientY - r.top) * (canvas.height / r.height)
+  };
+}
+
+let dragging = false, dragKey = null, offset = { x: 0, y: 0 };
+
+canvas.addEventListener('pointerdown', e => {
+  const p = pointerPos(e);
+  const dist = (a, b) => Math.hypot(p.x - a.x, p.y - a.y);
+
+  if (dist(state.mainPos) < 140) {
+    dragKey = 'main';
+  } else if (dist(state.subPos) < 90) {
+    dragKey = 'sub';
+  } else {
+    state.selected = null;
+    draw();
+    return;
+  }
+
+  state.selected = dragKey;
+  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
+  offset = { x: p.x - pos.x, y: p.y - pos.y };
+  dragging = true;
+  canvas.setPointerCapture(e.pointerId);
+  draw();
+});
+
+canvas.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const p = pointerPos(e);
+  const pos = dragKey === 'main' ? state.mainPos : state.subPos;
+  pos.x = Math.max(220, Math.min(860, p.x - offset.x));
+  pos.y = Math.max(340, Math.min(760, p.y - offset.y));
+  draw();
+});
+
+canvas.addEventListener('pointerup', e => {
+  dragging = false;
+  dragKey = null;
+  try { canvas.releasePointerCapture(e.pointerId); } catch (_) {}
 });
 
 draw();
