@@ -176,7 +176,7 @@
       <input id="mainText" type="text" value="MANILA" maxlength="15" />
 
       <label>Style</label>
-      <select id="fontStyle">
+      <select id="mainFontStyle">
         <option value="rye">Rye</option>
         <option value="bold">Bold sans</option>
         <option value="classic">Classic serif</option>
@@ -195,6 +195,13 @@
       <h2>Secondary Text</h2>
       <label>Subtitle (Max 15)</label>
       <input id="subText" type="text" value="PHILIPPINES" maxlength="15" />
+
+      <label>Style</label>
+      <select id="subFontStyle">
+        <option value="bold">Bold sans</option>
+        <option value="rye">Rye</option>
+        <option value="classic">Classic serif</option>
+      </select>
 
       <label>Size</label>
       <input id="subSize" type="range" min="18" max="55" value="34" />
@@ -242,7 +249,8 @@ const CHEST_BOUNDS = {
 let state = {
   mainText: 'MANILA',
   subText: 'PHILIPPINES',
-  fontStyle: 'rye',
+  mainFontStyle: 'rye',
+  subFontStyle: 'bold',
   mainSize: 84,
   subSize: 34,
   mainColor: '#f5ead6',
@@ -300,11 +308,11 @@ function fontFor(style, size) {
   return `900 ${size}px Arial Black, Arial, sans-serif`;
 }
 
-function getFittingFontSize(text, style, initialSize, isMain) {
+function getFittingFontSize(text, style, initialSize) {
   let size = initialSize;
   ctx.save();
   while (size > 14) {
-    ctx.font = isMain ? fontFor(style, size) : `800 ${size}px Arial, sans-serif`;
+    ctx.font = fontFor(style, size);
     if (ctx.measureText(text).width <= CHEST_BOUNDS.maxTextWidth) break;
     size -= 2;
   }
@@ -312,10 +320,10 @@ function getFittingFontSize(text, style, initialSize, isMain) {
   return size;
 }
 
-function getTextBounds(text, pos, size, isMain) {
-  const effectiveSize = getFittingFontSize(text, state.fontStyle, size, isMain);
+function getTextBounds(text, pos, size, style) {
+  const effectiveSize = getFittingFontSize(text, style, size);
   ctx.save();
-  ctx.font = isMain ? fontFor(state.fontStyle, effectiveSize) : `800 ${effectiveSize}px Arial, sans-serif`;
+  ctx.font = fontFor(style, effectiveSize);
   const m = ctx.measureText(text);
   ctx.restore();
   const halfW = (m.width + 24) / 2;
@@ -331,13 +339,13 @@ function getTextBounds(text, pos, size, isMain) {
   };
 }
 
-function drawTextObject(text, pos, size, color, isMain = false) {
+function drawTextObject(text, pos, size, color, style, isMain = false) {
   if (!text) return;
   
-  const bounds = getTextBounds(text, pos, size, isMain);
+  const bounds = getTextBounds(text, pos, size, style);
 
   ctx.save();
-  ctx.font = isMain ? fontFor(state.fontStyle, bounds.effectiveSize) : `800 ${bounds.effectiveSize}px Arial, sans-serif`;
+  ctx.font = fontFor(style, bounds.effectiveSize);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -374,8 +382,8 @@ function draw() {
   ctx.fillRect(0, 0, 1080, 1080);
 
   drawGarment();
-  drawTextObject(state.mainText, state.mainPos, state.mainSize, state.mainColor, true);
-  drawTextObject(state.subText, state.subPos, state.subSize, state.subColor, false);
+  drawTextObject(state.mainText, state.mainPos, state.mainSize, state.mainColor, state.mainFontStyle, true);
+  drawTextObject(state.subText, state.subPos, state.subSize, state.subColor, state.subFontStyle, false);
 }
 
 function bind(id, event, fn) {
@@ -384,7 +392,8 @@ function bind(id, event, fn) {
 
 bind('mainText', 'input', e => { state.mainText = e.target.value.toUpperCase(); draw(); });
 bind('subText', 'input', e => { state.subText = e.target.value.toUpperCase(); draw(); });
-bind('fontStyle', 'change', e => { state.fontStyle = e.target.value; draw(); });
+bind('mainFontStyle', 'change', e => { state.mainFontStyle = e.target.value; draw(); });
+bind('subFontStyle', 'change', e => { state.subFontStyle = e.target.value; draw(); });
 bind('mainSize', 'input', e => { state.mainSize = +e.target.value; draw(); });
 bind('subSize', 'input', e => { state.subSize = +e.target.value; draw(); });
 bind('outlineToggle', 'change', e => { state.outline = e.target.checked; draw(); });
@@ -400,7 +409,8 @@ bind('resetBtn', 'click', () => {
   Object.assign(state, {
     mainText: 'MANILA',
     subText: 'PHILIPPINES',
-    fontStyle: 'rye',
+    mainFontStyle: 'rye',
+    subFontStyle: 'bold',
     mainSize: 84,
     subSize: 34,
     mainColor: '#f5ead6',
@@ -413,7 +423,8 @@ bind('resetBtn', 'click', () => {
 
   document.getElementById('mainText').value = 'MANILA';
   document.getElementById('subText').value = 'PHILIPPINES';
-  document.getElementById('fontStyle').value = 'rye';
+  document.getElementById('mainFontStyle').value = 'rye';
+  document.getElementById('subFontStyle').value = 'bold';
   document.getElementById('mainSize').value = 84;
   document.getElementById('subSize').value = 34;
   document.getElementById('outlineToggle').checked = true;
@@ -448,8 +459,8 @@ let dragging = false, dragKey = null, offset = { x: 0, y: 0 };
 
 canvas.addEventListener('pointerdown', e => {
   const p = pointerPos(e);
-  const mainB = getTextBounds(state.mainText, state.mainPos, state.mainSize, true);
-  const subB = getTextBounds(state.subText, state.subPos, state.subSize, false);
+  const mainB = getTextBounds(state.mainText, state.mainPos, state.mainSize, state.mainFontStyle);
+  const subB = getTextBounds(state.subText, state.subPos, state.subSize, state.subFontStyle);
 
   if (p.x >= mainB.left && p.x <= mainB.right && p.y >= mainB.top && p.y <= mainB.bottom) {
     dragKey = 'main';
