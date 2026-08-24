@@ -667,7 +667,6 @@ bind('exportBtn', 'click', () => {
   const prev = state.selected;
   state.selected = null;
   draw();
-  drawWatermark();
   const a = document.createElement('a');
   a.download = `art-of-method-${currentGarmentKey}.png`;
   a.href = canvas.toDataURL('image/png');
