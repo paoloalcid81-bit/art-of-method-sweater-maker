@@ -177,7 +177,7 @@
 
       <label>Style</label>
       <select id="fontStyle">
-        <option value="jeepney">Jeepney display</option>
+        <option value="rye">Rye</option>
         <option value="bold">Bold sans</option>
         <option value="classic">Classic serif</option>
       </select>
@@ -231,7 +231,6 @@ const inkColors = [
   ['Black', '#111111']
 ];
 
-// Strict bounds locked to the sweater chest
 const CHEST_BOUNDS = {
   minX: 420,
   maxX: 660,
@@ -243,7 +242,7 @@ const CHEST_BOUNDS = {
 let state = {
   mainText: 'MANILA',
   subText: 'PHILIPPINES',
-  fontStyle: 'jeepney',
+  fontStyle: 'rye',
   mainSize: 84,
   subSize: 34,
   mainColor: '#f5ead6',
@@ -278,7 +277,6 @@ swatches('subSwatches', inkColors, 'subColor');
 function drawGarment() {
   if (!sweaterImage.complete || !sweaterImage.naturalWidth) return;
 
-  // Maximum canvas fill for high visual clarity
   const maxWidth = 1080;
   const maxHeight = 1080;
 
@@ -297,7 +295,7 @@ function drawGarment() {
 }
 
 function fontFor(style, size) {
-  if (style === 'jeepney') return `400 ${size}px 'Rye', cursive, serif`;
+  if (style === 'rye') return `400 ${size}px 'Rye', cursive, serif`;
   if (style === 'classic') return `700 ${size}px Georgia, serif`;
   return `900 ${size}px Arial Black, Arial, sans-serif`;
 }
@@ -402,7 +400,7 @@ bind('resetBtn', 'click', () => {
   Object.assign(state, {
     mainText: 'MANILA',
     subText: 'PHILIPPINES',
-    fontStyle: 'jeepney',
+    fontStyle: 'rye',
     mainSize: 84,
     subSize: 34,
     mainColor: '#f5ead6',
@@ -415,7 +413,7 @@ bind('resetBtn', 'click', () => {
 
   document.getElementById('mainText').value = 'MANILA';
   document.getElementById('subText').value = 'PHILIPPINES';
-  document.getElementById('fontStyle').value = 'jeepney';
+  document.getElementById('fontStyle').value = 'rye';
   document.getElementById('mainSize').value = 84;
   document.getElementById('subSize').value = 34;
   document.getElementById('outlineToggle').checked = true;
@@ -476,7 +474,6 @@ canvas.addEventListener('pointermove', e => {
   const p = pointerPos(e);
   const pos = dragKey === 'main' ? state.mainPos : state.subPos;
   
-  // Confines drag coordinates strictly within sweater chest boundaries
   pos.x = Math.max(CHEST_BOUNDS.minX, Math.min(CHEST_BOUNDS.maxX, p.x - offset.x));
   pos.y = Math.max(CHEST_BOUNDS.minY, Math.min(CHEST_BOUNDS.maxY, p.y - offset.y));
   draw();
